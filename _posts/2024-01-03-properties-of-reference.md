@@ -25,9 +25,9 @@ For example, Rust ensures every reference is unique before deallocating it.
 
 ### Reference Exclusivity
 
-An exclusive reference is the only accessible reference to the given memory.
+An exclusive reference is the only accessible reference to the given memory at one point of execution, even though there may be other inaccessible references to the same memory.
 
-Unqiue reference implies exclusivity, but not the other way around.
+Unique reference implies exclusivity, but not the other way around.
 
 <!-- - In Rust, exclusive reference can grant an exclusive access to its memory.
     - When an exclusive reference is created, the original reference becomes not accessible until the new reference is no longer live in order to avoid data race.
@@ -37,11 +37,11 @@ Unqiue reference implies exclusivity, but not the other way around.
 
 ### Reference Ownership
 
-Owner reference is unique and exclusive at the beginning.
-
 Owner references are responsible for deallocating the memory, even if there might be non-owner references to the same memory (aliases). So, uniqueness implies ownership, but not the other way around.
 
-In the RAII pattern, declared variables are the owner references. But, (unsafe) pointers have no owners designated.
+Every owner reference is unique and exclusive at the beginning. But, uniqueness and exclusivity can be temporarily lost due to borrowing.
+
+In the [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) pattern, declared variables are the owner references. But, (unsafe) pointers have no owners designated.
 
 In Rust, there is no way to pass owned references to other functions. The viable alternative is moving objects around. In this sense, ownership is restricted to the declared function in Rust.
 
@@ -51,7 +51,7 @@ Mutability implies exclusivity in Rust, but not the other way around.
 
 For example, a local variable can be declared immutable, while it will start out to be a unique, exclusive and owner reference. So, exclusivity doesn't always mean mutability.
 
-Also, there is a situation where immutable reference turns out to be the only accessible reference (thus, the exclusive reference). That happens when it's the only live borrow from a mutable reference. By the way, in this case, I argue that it should be [allowed to upgrade to a mutable reference](https://duckki.github.io/2024/01/01/inferred-mutability.html).
+Also, there is a situation where immutable reference turns out to be the only accessible reference (thus, the exclusive reference). That happens when it's the only live borrow from a mutable reference. By the way, in this case, I argue that it could be [allowed to upgrade to a mutable reference](https://duckki.github.io/2024/01/01/inferred-mutability.html) (under certain conditions).
 
 ### Summary of the Relationships
 
