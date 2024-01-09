@@ -8,6 +8,8 @@ I've discussed this idea at the Rust internal forum and I realized a new syntax 
 
 I propose two new language features. One of them requires a new syntax.
 
+#### Function type annotation for accessibility relationship
+
 First, in order to establish the stronger "accessibility" relationship between references across function boundaries, we need a new language feature that relates the returned values to arguments.
 
 Example (in Rust):
@@ -38,6 +40,8 @@ It is safe to upgrade `r1`'s mutability since the reference `r1` is accessible f
 However, this is not currently possible in Rust. The usual lifetime constraint in Rust is a "lives-as-long-as" relationship between arguments and returned references. That's not strong enough to prove the returned reference is accessible from the argument.
 
 Thus, we need a new direct accessibility annotation. The `&'input i32` in the return type is a new language feature to indicate the returned referenced is "accessible" from `input` (or a subdata of the argument `input`).
+
+#### Lifetime inversion
 
 Second, we need to relax lifetime constraints between references that have the same origin of borrow. In the `example1`, there is another reason why `r1` can't be mutably borrowed - another immutable borrow from `v` (the `&v`) is still live. Because `r1` is borrowing from `&v` (via `get_ref`), that keeps `&v` live as long as `r1` is live.
 
@@ -116,7 +120,7 @@ struct Eligible2<'a> {
 }
 ```
 
-A special annotation like `'{mut Self}` could indicate that `immut_ref` can must reference a mutable subfield of `Eligible2`. Therefore, `immut_ref` can be upgraded to a mutable one, if a mutable `self` reference is live. But, I'm not sure how important this particular use case would be.
+A special annotation like `'{mut Self}` could indicate that `immut_ref` can must reference a mutable subfield of `Eligible2`. Therefore, `immut_ref` can be upgraded to a mutable one safely. But, I'm not sure how important this particular use case would be.
 
 
 ### Proof of Safety
