@@ -1,6 +1,6 @@
 ## Inferred Mutability: Safety Proof of Mutability Upgrade
 
-My [previous blog post](https://duckki.github.io/2024/01/01/inferred-mutability.html) proposed the abiilty to upgrade immutable references to mutable ones in Rust or similar languages. The main benefit of this is avoiding unncecessary code duplication implementing both immutable accessor and mutable accessor functions. It amounts to be a mutability generic programming (see a related [Pre-RFC](https://internals.rust-lang.org/t/pre-rfc-unify-references-and-make-them-generic-over-mutability/18846)).
+My [previous blog post](https://duckki.github.io/2024/01/01/inferred-mutability.html) proposed the ability to upgrade immutable references to mutable ones in Rust or similar languages. The main benefit of this is avoiding unnecessary code duplication implementing both immutable accessor and mutable accessor functions. It amounts to be a mutability generic programming (see a related [Pre-RFC](https://internals.rust-lang.org/t/pre-rfc-unify-references-and-make-them-generic-over-mutability/18846)).
 
 I've discussed this idea at the Rust internal forum and I realized a new syntax is necessary and references of certain types are not eligible for mutability upgrades. In this post, I'll discuss those. Also, I'll sketch the proof of its safety.
 
@@ -94,7 +94,7 @@ fn example2( key: i32 ) {
 
 Structs with an immutable field should fail the eligibility check. For example, a tuple with immutable references.
 
-I don't think this is a loss of functionality, one must write a separate function that guarrantees to return a mutable reference, if necessary. See the following example:
+I don't think this is a loss of functionality, one must write a separate function that guarantees to return a mutable reference, if necessary. See the following example:
 
 ```rust
 fn get_ref_ineligible_mut<'a>(x: &'a Ineligible<'a>, key: i32) -> &'x mut i32 {
@@ -107,7 +107,7 @@ fn get_ref_ineligible_mut<'a>(x: &'a Ineligible<'a>, key: i32) -> &'x mut i32 {
 
 However, the rule can be too restrictive in some cases. What if those immutable references are pointing to the mutable memory within the data structure?
 
-As a future improvelemnt, an additional syntax could be added to indicate that an immutable field must reference another mutable field within the struct. For example,
+As a future improvement, an additional syntax could be added to indicate that an immutable field must reference another mutable field within the struct. For example,
 
 ```rust
 struct Eligible2<'a> {
@@ -153,4 +153,4 @@ Conclusion: Since `y` is the only live borrow from `x` from (2) and `y` is in th
 #### Notes
 
 - Smart pointers like `Cell`, `Rc`, etc. are eligible for mutability upgrade and shouldn't cause a safety issue. They prohibit access to their internal references via immutable reference.
-- `Box` also doesn't cause a problem, even if it exposes immutable refernce via immutable `self`. Since `Box`'s internal references are not mutably shared, upgrading its immutable internal reference guarantees exclusive access and thus it's safe to mutate.
+- `Box` also doesn't cause a problem, even if it exposes immutable reference via immutable `self`. Since `Box`'s internal references are not mutably shared, upgrading its immutable internal reference guarantees exclusive access and thus it's safe to mutate.
