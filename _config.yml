@@ -23,6 +23,9 @@ social:
     - "https://github.com/duckki"
     - "https://www.linkedin.com/in/duckki"
 
+analytics:
+  cloudflare_token: "0ef1f62ab3654784ac84d16e6c82dafc"
+
 theme: "minima"
 
 plugins:
