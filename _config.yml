@@ -59,6 +59,7 @@ defaults:
       layout: post
 
 exclude:
+  - AGENTS.md
   - .bundle
   - .github
   - .scratch
