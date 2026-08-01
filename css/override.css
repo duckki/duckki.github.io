@@ -13,6 +13,7 @@
   --accent: #4daafc;
   --accent-dark: #85b6ff;
   --accent-soft: #264778;
+  --link-visited: #b4a0ff;
   --warm: #4ec9b0;
   --inline-code-bg: #292929;
   --code-bg: #1f1f1f;
@@ -43,6 +44,11 @@ a {
   text-underline-offset: 0.18em;
 }
 
+a:visited {
+  color: var(--link-visited);
+  text-decoration-color: rgba(180, 160, 255, 0.38);
+}
+
 a:hover {
   color: var(--accent-dark);
   text-decoration-color: currentColor;
@@ -71,7 +77,7 @@ button:focus-visible {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  min-height: 76px;
+  min-height: 64px;
 }
 
 .site-brand,
@@ -123,7 +129,7 @@ button:focus-visible {
 }
 
 .page-content {
-  padding-block: 72px 96px;
+  padding-block: 28px 72px;
 }
 
 .hero {
@@ -134,7 +140,7 @@ button:focus-visible {
   border-radius: 1.4rem;
   box-shadow: var(--shadow);
   overflow: hidden;
-  padding: clamp(2rem, 6vw, 4.8rem);
+  padding: clamp(1.75rem, 4vw, 3.25rem);
   position: relative;
 }
 
@@ -157,13 +163,13 @@ button:focus-visible {
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.14em;
-  margin: 0 0 1.2rem;
+  margin: 0 0 0.9rem;
   text-transform: uppercase;
 }
 
 .hero h1,
 .not-found h1 {
-  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
   font-weight: 780;
   letter-spacing: -0.055em;
   line-height: 0.98;
@@ -177,7 +183,7 @@ button:focus-visible {
   color: var(--text-muted);
   font-size: 1.16rem;
   line-height: 1.65;
-  margin: 2rem 0 0;
+  margin: 1.5rem 0 0;
   max-width: 650px;
   position: relative;
   z-index: 1;
@@ -187,7 +193,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   position: relative;
   z-index: 1;
 }
@@ -223,7 +229,7 @@ button:focus-visible {
 }
 
 .latest-posts {
-  padding-top: 88px;
+  padding-top: 64px;
 }
 
 .section-heading {
@@ -331,8 +337,8 @@ button:focus-visible {
 
 .post-header {
   border-bottom: 1px solid var(--border);
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
 }
 
 .post-kicker {
@@ -341,7 +347,7 @@ button:focus-visible {
 
 .post-title {
   color: var(--text);
-  font-size: clamp(2.5rem, 7vw, 4.6rem);
+  font-size: clamp(2.25rem, 5.5vw, 3.65rem);
   font-weight: 780;
   letter-spacing: -0.055em;
   line-height: 1;
@@ -384,6 +390,27 @@ button:focus-visible {
   margin-top: 0.45rem;
 }
 
+.post-content table {
+  background: var(--background);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.post-content table tr:nth-child(even) {
+  background: #252525;
+}
+
+.post-content table th {
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
+  border-bottom-color: var(--border-strong);
+  color: var(--text-strong);
+}
+
+.post-content table td {
+  border-color: var(--border-strong);
+}
+
 code {
   background: var(--inline-code-bg);
   border: 0;
@@ -401,6 +428,10 @@ pre,
   border: 1px solid var(--border-strong);
   border-radius: 0.8rem;
   color: var(--code-text);
+}
+
+pre {
+  line-height: 1.4;
 }
 
 .highlight {
@@ -500,6 +531,11 @@ pre code,
 .highlight .err,
 .highlight .gr {
   color: #f44747;
+}
+
+.language-lean .highlight .err {
+  background: transparent;
+  color: var(--code-text);
 }
 
 .share-links {
@@ -716,20 +752,23 @@ pre code,
   }
 
   .site-header__inner {
-    min-height: 66px;
+    min-height: 58px;
   }
 
   .site-nav {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     gap: 1rem;
   }
 
   .page-content {
-    padding-block: 40px 64px;
+    padding-block: 28px 52px;
   }
 
   .hero {
     border-radius: 1rem;
-    padding: 2rem 1.4rem;
+    padding: 1.5rem 1.25rem;
   }
 
   .hero::after {
@@ -738,7 +777,7 @@ pre code,
 
   .hero h1,
   .not-found h1 {
-    font-size: clamp(2.45rem, 13vw, 3.6rem);
+    font-size: clamp(2.2rem, 11vw, 3rem);
   }
 
   .hero__lede {
@@ -746,7 +785,7 @@ pre code,
   }
 
   .latest-posts {
-    padding-top: 64px;
+    padding-top: 48px;
   }
 
   .section-heading {
@@ -764,11 +803,11 @@ pre code,
   }
 
   .post-title {
-    font-size: clamp(2.35rem, 12vw, 3.6rem);
+    font-size: clamp(2.05rem, 9vw, 2.75rem);
   }
 
   .post-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .post-content > p:first-child {
