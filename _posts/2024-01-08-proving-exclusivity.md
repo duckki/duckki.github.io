@@ -1,18 +1,27 @@
-## Inferred Mutability: Safety Proof of Mutability Upgrade
+---
+title: "Inferred Mutability: Safety Proof of Mutability Upgrade"
+date: 2024-01-08 00:00:00 -0800
+description: "A sketch of the language rules and safety argument needed to upgrade an immutable reference to a mutable one."
+tags:
+  - Rust
+  - Ownership
+  - Language design
+---
 
-My [previous blog post](https://duckki.github.io/2024/01/01/inferred-mutability.html) proposed the ability to upgrade immutable references to mutable ones in Rust or similar languages. The main benefit of this is avoiding unnecessary code duplication implementing both immutable accessor and mutable accessor functions. It amounts to be a mutability generic programming (see a related [Pre-RFC](https://internals.rust-lang.org/t/pre-rfc-unify-references-and-make-them-generic-over-mutability/18846)).
+My [previous blog post]({% post_url 2024-01-01-inferred-mutability %}) proposed the ability to upgrade immutable references to mutable ones in Rust or similar languages. The main benefit is avoiding unnecessary code duplication when implementing both immutable and mutable accessor functions. It amounts to generic programming over mutability (see a related [Pre-RFC](https://internals.rust-lang.org/t/pre-rfc-unify-references-and-make-them-generic-over-mutability/18846)).
 
 I've discussed this idea at the Rust internal forum and I realized a new syntax is necessary and references of certain types are not eligible for mutability upgrades. In this post, I'll discuss those. Also, I'll sketch the proof of its safety.
 
-### Necessary additions to the language and borrow checker
+## Necessary additions to the language and borrow checker
 
 I propose two new language features. One of them requires a new syntax.
 
-#### Function type annotation for accessibility relationship
+### Function type annotation for accessibility relationship
 
 First, in order to establish the stronger "accessibility" relationship between references across function boundaries, we need a new language feature that relates the returned values to arguments.
 
 Example (in Rust):
+
 ```rust
 struct Example {
     data1: i32,
@@ -30,7 +39,7 @@ fn get_ref( input: & Example, key: i32 ) -> &'input i32 {
 fn example1( key: i32 ) {
     let mut v = Example { data1: 1, data2: 2 };
     let r1 = get_ref( &v, key );
-    let r2 = &mut r1; // currently now allowed
+    let r2 = &mut r1; // currently not allowed
     *r2 = 3;
 }
 ```
@@ -41,16 +50,15 @@ However, this is not currently possible in Rust. The usual lifetime constraint i
 
 Thus, we need a new direct accessibility annotation. The `&'input i32` in the return type is a new language feature to indicate the returned referenced is "accessible" from `input` (or a subdata of the argument `input`).
 
-#### Lifetime inversion
+### Lifetime inversion
 
 Second, we need to relax lifetime constraints between references that have the same origin of borrow. In the `example1`, there is another reason why `r1` can't be mutably borrowed - another immutable borrow from `v` (the `&v`) is still live. Because `r1` is borrowing from `&v` (via `get_ref`), that keeps `&v` live as long as `r1` is live.
 
-What we need here is to allow both `&v` and `r1` die at the time of `r2`'s declaration. That is safe because both `&v` and `r1` are directly/indirectly borrowing from `v`. We are eliminating the strict lifetime relationship between `&v` and `r1`, by realizing that their relative lifetimes are irrelevant (as long as `v` is live).
+What we need here is to allow both `&v` and `r1` to die at the time of `r2`'s declaration. That is safe because both `&v` and `r1` are directly or indirectly borrowing from `v`. We are eliminating the strict lifetime relationship between `&v` and `r1` by realizing that their relative lifetimes are irrelevant as long as `v` is live.
 
+## Limitations
 
-### Limitations
-
-#### First limitation: Non-deterministic dependency
+### First limitation: Non-deterministic dependency
 
 ```rust
 fn longest(x: &str, y: &str) -> &'??? str {
@@ -66,7 +74,7 @@ My current proposal is allowing to specify one argument such as `'x` or `'y` to 
 
 One can think of a more complex syntax like `fn longest(x: &str, y: &str) -> &'{x, y} str`. But, that can be added later in the future.
 
-#### Second limitation: Structs with immutable fields
+### Second limitation: Structs with immutable fields
 
 Some structs may not be eligible for mutability upgrade. For example,
 
@@ -120,10 +128,9 @@ struct Eligible2<'a> {
 }
 ```
 
-A special annotation like `'{mut Self}` could indicate that `immut_ref` can must reference a mutable subfield of `Eligible2`. Therefore, `immut_ref` can be upgraded to a mutable one safely. But, I'm not sure how important this particular use case would be.
+A special annotation like `'{mut Self}` could indicate that `immut_ref` must reference a mutable subfield of `Eligible2`. Therefore, `immut_ref` can be upgraded to a mutable one safely. But, I'm not sure how important this particular use case would be.
 
-
-### Proof of Safety
+## Proof of Safety
 
 Here's the proof of why mutability upgrade is safe under the conditions described above.
 
@@ -133,7 +140,7 @@ Suppose we have a reference `x` to an object of type `T`. Let's define two sets 
 
 `M(x)`: The set of all accessible mutable references from the mutable version of `x` (`&mut T`).
 
-#### Hypothesis
+### Hypothesis
 
 The conditions checked before upgrading an immutable reference `y`:
 
@@ -145,7 +152,7 @@ The conditions checked before upgrading an immutable reference `y`:
 
 4) `T` has no immutable fields.
 
-#### Proof
+### Proof
 
 5) From (4), `I(x)` is a subset of `M(x)`. (In other words, `I(x) - M(x)` is empty.)
 
@@ -153,8 +160,7 @@ The conditions checked before upgrading an immutable reference `y`:
 
 Conclusion: Since `y` is the only live borrow from `x` from (2) and `y` is in the set `M(x)` from (6), it is safe to upgrade `y` to a mutable reference.
 
-
-#### Notes
+### Notes
 
 - Smart pointers like `Cell`, `Rc`, etc. are eligible for mutability upgrade and shouldn't cause a safety issue. They prohibit access to their internal references via immutable reference.
 - `Box` also doesn't cause a problem, even if it exposes immutable reference via immutable `self`. Since `Box`'s internal references are not mutably shared, upgrading its immutable internal reference guarantees exclusive access and thus it's safe to mutate.

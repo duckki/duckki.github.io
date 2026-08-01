@@ -1,4 +1,12 @@
-## The Properties of Reference
+---
+title: "The Properties of Reference"
+date: 2024-01-03 00:00:00 -0800
+description: "A vocabulary for separating reference uniqueness, exclusivity, ownership, and mutability—and reasoning about their relationships."
+tags:
+  - References
+  - Ownership
+  - Language design
+---
 
 <!-- | | Uniqueness | Exclusivity | Mutability | Mojo | Rust |
 | - | ------- | ------- | ------- | ------- | ------- |
@@ -17,13 +25,13 @@ A reference can be
 
 Let's think about those properties and their relationships.
 
-### Reference Uniqueness
+## Reference Uniqueness
 
-When there is only once reference to a memory, that reference is the unique reference. It implies it is safe to modify the memory. Also, it implies it is safe to deallocate it.
+When there is only one reference to a memory location, that reference is the unique reference. It implies it is safe to modify the memory. It also implies it is safe to deallocate it.
 
 For example, Rust ensures every reference is unique before deallocating it.
 
-### Reference Exclusivity
+## Reference Exclusivity
 
 An exclusive reference is the only accessible reference to the given memory at one point of execution, even though there may be other inaccessible references to the same memory.
 
@@ -35,7 +43,7 @@ Unique reference implies exclusivity, but not the other way around.
 - In Rust, any reference can grant a non-exclusive (shared) access to aliases.
     - When a shared reference is created, the original exclusive reference is not accessible until all shared references are no longer live for safety. -->
 
-### Reference Ownership
+## Reference Ownership
 
 Owner references are responsible for deallocating the memory, even if there might be non-owner references to the same memory (aliases). So, uniqueness implies ownership, but not the other way around.
 
@@ -45,15 +53,15 @@ In the [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initializati
 
 In Rust, there is no way to pass owned references to other functions. The viable alternative is moving objects around. In this sense, ownership is restricted to the declared function in Rust.
 
-### Reference Mutability
+## Reference Mutability
 
 Mutability implies exclusivity in Rust, but not the other way around.
 
 For example, a local variable can be declared immutable, while it will start out to be a unique, exclusive and owner reference. So, exclusivity doesn't always mean mutability.
 
-Also, there is a situation where immutable reference turns out to be the only accessible reference (thus, the exclusive reference). That happens when it's the only live borrow from a mutable reference. By the way, in this case, I argue that it could be [allowed to upgrade to a mutable reference](https://duckki.github.io/2024/01/01/inferred-mutability.html) (under certain conditions).
+Also, there is a situation where an immutable reference turns out to be the only accessible reference (thus, the exclusive reference). That happens when it's the only live borrow from a mutable reference. In this case, I argue that it could be [allowed to upgrade to a mutable reference]({% post_url 2024-01-01-inferred-mutability %}) under certain conditions.
 
-### Summary of the Relationships
+## Summary of the Relationships
 
 - Uniqueness implies ownership.
 - Ownership implies uniqueness and exclusivity, unless borrowed.
@@ -66,9 +74,9 @@ Also, there is a situation where immutable reference turns out to be the only ac
 - Borrowing can be either exclusive or non-exclusive.
 - Non-exclusive references can be borrowed non-exclusively again. -->
 
-### Conclusion
+## Conclusion
 
-- Uniqueness is a state of owner reference and it doesn't seem to be useful to declare an owner reference to be unique permanantly.
+- Uniqueness is a state of an owner reference, and it doesn't seem useful to declare an owner reference to be permanently unique.
 - Ownership should be allowed to be passed around for flexibility. Thus, owner and mutable reference types need to be distinguished in programming languages.
 - While mutability and exclusivity are not exactly the same, it's unclear whether it's worth having separate mutable and exclusive reference types in programming languages. Mutable reference type alone may be enough.
 - Immutable references can be exclusive, but they are not allowed to be converted/upgraded to mutable references, even if it's safe to do so.

@@ -1,1 +1,12 @@
-﻿_site
+_site/
+.bundle/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+node_modules/
+tmp/
+vendor/
+
+# Local-only working files
+.scratch/
+.vscode/

@@ -1,21 +1,25 @@
-<hr>
-<div class="post_navi">
+<nav class="post-navi" aria-label="More essays">
   {%- if page.previous.url -%}
-  <a class="post_navi-item nav_prev" href="{{ page.previous.url }}" title="{{ page.previous.title }}">
-    <div class="post_navi-arrow">&lt;</div><div class="post_navi-label">Previous Post</div><div><span>{{ page.previous.title }}</span></div>
-  </a>
+    <a class="post-navi__item post-navi__item--previous" href="{{ page.previous.url | relative_url }}">
+      <span class="post-navi__label">← Previous essay</span>
+      <span>{{ page.previous.title }}</span>
+    </a>
   {%- else -%}
-  <a class="post_navi-item nav_prev" href="{{ 'archive.html' | absolute_url }}" title="Blog Archive">
-    <div class="post_navi-arrow">&lt;</div><div class="post_navi-label">Blog Archive</div><div><span>Archive of all previous blog posts</span></div>
-  </a>
+    <a class="post-navi__item post-navi__item--previous" href="{{ '/archive.html' | relative_url }}">
+      <span class="post-navi__label">← Explore</span>
+      <span>Essay archive</span>
+    </a>
   {%- endif -%}
+
   {%- if page.next.url -%}
-  <a class="post_navi-item nav_next" href="{{ page.next.url }}" title="{{ page.next.title }}">
-    <div class="post_navi-arrow">&gt;</div><div class="post_navi-label">Next Post</div><div><span>{{ page.next.title }}</span></div>
-  </a>
+    <a class="post-navi__item post-navi__item--next" href="{{ page.next.url | relative_url }}">
+      <span class="post-navi__label">Next essay →</span>
+      <span>{{ page.next.title }}</span>
+    </a>
   {%- else -%}
-  <a class="post_navi-item nav_next" href="{{ 'archive.html' | absolute_url }}" title="Blog Archive">
-    <div class="post_navi-arrow">&gt;</div><div class="post_navi-label">Blog Archive</div><div><span>Archive of all previous blog posts</span></div>
-  </a>
+    <a class="post-navi__item post-navi__item--next" href="{{ '/archive.html' | relative_url }}">
+      <span class="post-navi__label">Explore →</span>
+      <span>Essay archive</span>
+    </a>
   {%- endif -%}
-</div>
+</nav>

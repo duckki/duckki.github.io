@@ -1,42 +1,71 @@
 title: "PL Rant"
-author: "Duckki Oe"
-description: "Programming Languages and Static Analysis." # This will show up in places like twitter, linkedin, etc, if you share your sites url as a post.
+description: "Essays about programming languages, ownership, and static analysis."
+url: "https://duckki.github.io"
+baseurl: ""
+lang: "en"
+timezone: "America/Los_Angeles"
 
-# Email / Social media user names used by the minima theme:
-# All of these are optional and can be removed or commented out
+author:
+  name: "Duckki Oe"
+  email: "duckki.dev@gmail.com"
+
 email: "duckki.dev@gmail.com"
 github_username: "duckki"
 linkedin_username: "duckki"
-twitter_username: "DuckkiOe"
-#facebook_username: username
-#flickr_username: username
-#instagram_username: username
-#pinterest_username: username
-#youtube_username: username
-#googleplus_username: +username
 
-#########################################################################################
-######### Nothing below needs to be changed (unless you know what you're doing) #########
-#########################################################################################
+twitter:
+  username: "DuckkiOe"
+  card: "summary_large_image"
+
+social:
+  name: "Duckki Oe"
+  links:
+    - "https://github.com/duckki"
+    - "https://www.linkedin.com/in/duckki"
+
 theme: "minima"
-
-rss: rss
-
-kramdown:
-  syntax_highlighter_opts:
-    disable: true
 
 plugins:
   - jekyll-feed
+  - jekyll-seo-tag
   - jekyll-sitemap
 
-titles_from_headings:
-  strip_title: true
-  collections: true
+header_pages:
+  - archive.md
+  - about.md
+
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+sass:
+  style: compressed
 
 defaults:
   - scope:
       path: ""
-      type: post
     values:
-      tags: Other
+      image: "/assets/images/social-card.png"
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+exclude:
+  - .bundle
+  - .github
+  - .scratch
+  - .vscode
+  - cspell.json
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - package.json
+  - package-lock.json
+  - Rakefile
+  - README.md
+  - vendor

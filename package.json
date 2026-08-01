@@ -1,0 +1,18 @@
+{
+  "name": "pl-rant-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Content quality tooling for duckki.github.io",
+  "scripts": {
+    "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"#.scratch\" \"#node_modules\" \"#vendor\" \"#_site\" --no-globs",
+    "lint:spelling": "cspell lint --gitignore --no-progress --show-suggestions README.md _posts/**/*.md about.md archive.md index.md 404.html",
+    "lint": "npm run lint:markdown && npm run lint:spelling"
+  },
+  "devDependencies": {
+    "cspell": "10.0.1",
+    "markdownlint-cli2": "0.23.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
