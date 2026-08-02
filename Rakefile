@@ -3,7 +3,6 @@ require "rake"
 
 SITE_DIR = "./_site"
 SHARE_URLS = [
-  %r{bsky\.app/intent/compose},
   %r{linkedin\.com/sharing/share-offsite},
 ].freeze
 EXTERNAL_IGNORE_URLS = SHARE_URLS + [

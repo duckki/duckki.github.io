@@ -1,9 +1,7 @@
 {%- assign share_url = page.url | absolute_url | url_encode -%}
 {%- assign share_title = page.title | url_encode -%}
-{%- capture bluesky_text -%}{{ page.title }} — {{ page.url | absolute_url }}{%- endcapture -%}
 <nav class="share-links" aria-label="Share this essay" data-proofer-ignore>
   <span class="share-links__label">Share</span>
-  <a href="https://bsky.app/intent/compose?text={{ bluesky_text | url_encode }}" target="_blank" rel="noopener noreferrer">Bluesky</a>
   <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
   <a href="mailto:?subject={{ share_title }}&amp;body={{ share_url }}">Email</a>
 </nav>
