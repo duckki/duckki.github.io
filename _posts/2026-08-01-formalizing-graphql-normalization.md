@@ -442,4 +442,4 @@ same meaning  <->  same normal form
 
 This formal model is also the foundation for the next results I plan to write
 about: alternative GraphQL execution strategies, proved equivalent to the
-specification-facing executor.
+specification-conformant executor.
