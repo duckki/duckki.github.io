@@ -416,12 +416,10 @@ original and Relay-flattened benchmark documents. That is an engineering
 recommendation, not a universal timing theorem; representative production
 workloads should still be measured.
 
-Async execution needs a different path. The current `execute` implementation
-serializes sibling fields, while neither the Lean model nor the benchmark covers
-promise scheduling. A future executor could analyze a validated persisted
-operation once, use concurrent ungrouped execution when no duplicate composite
-response positions remain, and fall back to collected execution otherwise. The
-current package does not yet implement or prove that dispatcher.
+Async execution needs a different path. The current execute implementation serializes
+sibling fields. A future executor could use concurrent ungrouped execution for fully
+flattened queries, then fall back to normal collected execution when duplicate composite
+selections remain. The current package does not yet implement or prove that dispatcher.
 
 Mutations remain delegated to GraphQL.js. A future hybrid could preserve
 grouped, serial mutation root fields while executing their child selection sets
