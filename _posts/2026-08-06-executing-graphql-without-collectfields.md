@@ -429,5 +429,5 @@ ungrouped.
 
 The lesson here is that GraphQL execution offers multiple valid choices, and some may
 fit your workflow better than the specification's default structure.
-Formalization helps uncover those choices and clarify the trade-offs that come
+Formalization helps validate those choices and clarify the trade-offs that come
 with them.
