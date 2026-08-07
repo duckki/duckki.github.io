@@ -411,6 +411,168 @@ button:focus-visible {
   border-color: var(--border-strong);
 }
 
+.execution-flow {
+  background:
+    linear-gradient(145deg, rgba(77, 170, 252, 0.06), rgba(78, 201, 176, 0.04)),
+    var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  margin: 1.5rem 0;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.execution-flow__diagram {
+  color: var(--text);
+}
+
+.execution-flow__node {
+  background: var(--background);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.55rem;
+  line-height: 1.35;
+  padding: 0.7rem 0.85rem;
+  text-align: center;
+}
+
+.execution-flow__node span {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.execution-flow__node code {
+  white-space: nowrap;
+}
+
+.execution-flow__input,
+.execution-flow__output {
+  margin-inline: auto;
+  max-width: 15rem;
+}
+
+.execution-flow__input {
+  border-color: var(--accent);
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.execution-flow__branches {
+  display: grid;
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2.8rem;
+  position: relative;
+}
+
+.execution-flow__branches::before {
+  border-top: 1px solid var(--border-strong);
+  content: "";
+  left: 25%;
+  position: absolute;
+  right: 25%;
+  top: -1.4rem;
+}
+
+.execution-flow__branches::after {
+  border-left: 1px solid var(--border-strong);
+  content: "";
+  height: 1.4rem;
+  left: 50%;
+  position: absolute;
+  top: -2.8rem;
+}
+
+.execution-flow__lane {
+  --flow-color: var(--accent);
+  align-items: stretch;
+  background: rgba(31, 31, 31, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  position: relative;
+}
+
+.execution-flow__lane::before,
+.execution-flow__lane::after {
+  border-left: 1px solid var(--border-strong);
+  content: "";
+  height: 1.4rem;
+  left: 50%;
+  position: absolute;
+}
+
+.execution-flow__lane::before {
+  top: -1.4rem;
+}
+
+.execution-flow__lane::after {
+  bottom: -1.4rem;
+}
+
+.execution-flow__lane--ungrouped {
+  --flow-color: var(--warm);
+}
+
+.execution-flow__lane-title {
+  color: var(--flow-color);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.8rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.execution-flow__lane .execution-flow__node {
+  border-top: 2px solid var(--flow-color);
+}
+
+.execution-flow__arrow {
+  color: var(--text-muted);
+  line-height: 1;
+  padding-block: 0.4rem;
+  text-align: center;
+}
+
+.execution-flow__merge {
+  margin-top: 2.8rem;
+  position: relative;
+}
+
+.execution-flow__merge::before {
+  border-top: 1px solid var(--border-strong);
+  content: "";
+  height: 1.4rem;
+  left: 25%;
+  position: absolute;
+  right: 25%;
+  top: -1.4rem;
+}
+
+.execution-flow__merge::after {
+  border-left: 1px solid var(--border-strong);
+  content: "";
+  height: 1.4rem;
+  left: 50%;
+  position: absolute;
+  top: -1.4rem;
+}
+
+.execution-flow__output {
+  border-color: var(--warm);
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.execution-flow figcaption {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
 code {
   background: var(--inline-code-bg);
   border: 0;
@@ -816,6 +978,50 @@ pre code,
 
   .post-content h2 {
     font-size: 1.6rem;
+  }
+
+  .execution-flow__branches {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    margin-top: 1rem;
+  }
+
+  .execution-flow__branches::before {
+    border: 0;
+    color: var(--text-muted);
+    content: "Two execution paths";
+    font-size: 0.78rem;
+    grid-column: 1;
+    letter-spacing: 0.06em;
+    position: static;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .execution-flow__branches::after,
+  .execution-flow__lane::before,
+  .execution-flow__lane::after {
+    display: none;
+  }
+
+  .execution-flow__merge {
+    margin-top: 2.25rem;
+  }
+
+  .execution-flow__merge::before {
+    border: 0;
+    color: var(--text-muted);
+    content: "↓";
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: -1.75rem;
+  }
+
+  .execution-flow__merge::after {
+    display: none;
   }
 
   .post-navi {
