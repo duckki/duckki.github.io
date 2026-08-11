@@ -1,6 +1,6 @@
-# PL Rant
+# Love Formal
 
-Source for [duckki.github.io](https://duckki.github.io/), a Jekyll blog about programming languages and static analysis.
+Source for [duckki.github.io](https://duckki.github.io/), a personal Jekyll blog about software engineering, programming languages, program analysis, and formal verification.
 
 ## Local development
 

@@ -94,17 +94,16 @@ button:focus-visible {
 
 .site-brand__mark {
   align-items: center;
-  background: var(--brand);
-  border-radius: 0.55rem;
-  color: #ffffff;
   display: inline-flex;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-  font-size: 1.1rem;
   height: 2.15rem;
   justify-content: center;
-  line-height: 1;
-  transform: rotate(-3deg);
   width: 2.15rem;
+}
+
+.site-brand__mark img {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .site-nav {
@@ -121,6 +120,7 @@ button:focus-visible {
   font-size: 0.92rem;
   font-weight: 650;
   line-height: 1;
+  padding: 0;
   text-decoration: none;
 }
 
@@ -145,7 +145,9 @@ button:focus-visible {
 }
 
 .hero::after {
-  background-image: radial-gradient(circle, rgba(77, 170, 252, 0.28) 1.4px, transparent 1.5px);
+  background-image:
+    linear-gradient(rgba(77, 170, 252, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 170, 252, 0.16) 1px, transparent 1px);
   background-size: 18px 18px;
   content: "";
   height: 150px;
@@ -1050,6 +1052,27 @@ pre code,
 
   .site-footer .site-footer__credit {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-brand {
+    font-size: 0.92rem;
+    gap: 0.45rem;
+  }
+
+  .site-brand__mark {
+    height: 1.8rem;
+    width: 1.8rem;
+  }
+
+  .site-nav {
+    gap: 0.7rem;
+  }
+
+  .site-nav .page-link,
+  .site-nav .page-link:visited {
+    font-size: 0.8rem;
   }
 }
 

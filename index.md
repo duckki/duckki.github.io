@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "Programming language notes"
-description: "Essays about language design, ownership, type systems, and static analysis."
+title: "Software and formal methods notes"
+description: "Software engineering, programming languages, formal verification, and everything in between."
 ---
 
 <section class="hero">
-  <p class="eyebrow">Programming languages · Static analysis</p>
-  <h1>Language design, ownership, and the proofs between.</h1>
-  <p class="hero__lede">Essays by Duckki Oe on the rules underneath software: how languages express intent, how references behave, and how static analysis can make those guarantees precise.</p>
+  <p class="eyebrow">A personal notebook by Duckki Oe</p>
+  <h1>Software engineering, programming languages, formal verification, and everything in between.</h1>
+  <p class="hero__lede">I write about the ideas and tools that help us understand software more precisely—from language design and program analysis to mechanized models and verified systems.</p>
   <div class="hero__actions">
     <a class="button button--primary" href="#latest">Read the latest</a>
     <a class="button" href="{{ '/archive.html' | relative_url }}">Browse the archive</a>

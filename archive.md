@@ -1,11 +1,11 @@
 ---
 layout: page
 title: "Essay archive"
-description: "All PL Rant essays, organized by year."
+description: "All Love Formal essays, organized by year."
 permalink: /archive.html
 ---
 
-<p class="page-intro">A chronological notebook on programming languages, reference semantics, ownership, and static analysis.</p>
+<p class="page-intro">A chronological notebook on software engineering, programming languages, program analysis, formal verification, and everything in between.</p>
 
 <div class="archive-list">
   {%- assign current_year = "" -%}
