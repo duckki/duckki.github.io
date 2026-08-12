@@ -51,7 +51,7 @@ defaults:
   - scope:
       path: ""
     values:
-      image: "/assets/images/social-card.png"
+      image: "/assets/images/social-card-love-formal.png"
   - scope:
       path: ""
       type: posts
