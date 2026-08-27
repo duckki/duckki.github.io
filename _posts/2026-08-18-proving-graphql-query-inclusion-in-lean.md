@@ -16,11 +16,86 @@ and possibly more. Can we decide that relationship without executing either
 operation?
 
 This question appears in query-plan correctness checks, cache reuse, operation
-comparison, and other static analyses. It sounds like a tree-subset test, but
-GraphQL makes it more subtle. Fields merge by response name. Inline fragments
-depend on runtime types. `@skip` and `@include` depend on variables. Aliases can
-make different resolver calls look alike. Errors can erase an otherwise shared
-part of a response through null propagation.
+comparison, and other static analyses. It sounds like a tree-subset test. A
+small example shows why it is not.
+
+Consider this small schema:
+
+```graphql
+interface Node {
+  criticalStatus: String!
+}
+
+type User implements Node {
+  criticalStatus: String!
+  name: String
+  profile: Profile
+}
+
+type Organization implements Node {
+  criticalStatus: String!
+  companyName: String
+}
+
+type Profile {
+  bio: String
+  avatarUrl: String
+}
+
+type Query {
+  node: Node
+}
+```
+
+Now compare these operations:
+
+```graphql
+query Provided($showLabel: Boolean!) {
+  node {
+    criticalStatus
+    ... on User {
+      label: name
+      profile {
+        bio
+      }
+    }
+    ... on User {
+      profile {
+        avatarUrl
+      }
+    }
+    ... on Organization {
+      label: companyName @include(if: $showLabel)
+    }
+  }
+}
+```
+
+```graphql
+query Required($showLabel: Boolean!) {
+  node {
+    ... on User {
+      label: name @include(if: $showLabel)
+      profile {
+        bio
+        avatarUrl
+      }
+    }
+    ... on Organization {
+      label: companyName @include(if: $showLabel)
+    }
+  }
+}
+```
+
+`Provided` includes `Required`, but not by literal tree containment. The two
+`profile` occurrences in `Provided` merge by response name into the child
+selection `{ bio avatarUrl }`. The runtime object type decides whether `label`
+comes from `User.name` or `Organization.companyName`, while `$showLabel` decides
+whether either occurrence is selected at all. Finally, if the extra non-null
+`criticalStatus` field fails, null propagation can erase the entire `node`
+object. That last case is why the semantic relation below compares only
+error-free executions.
 
 I recently added a query-inclusion theory to
 [`graphql-lean`](https://github.com/duckki/graphql-lean). It contains:
@@ -30,8 +105,8 @@ I recently added a query-inclusion theory to
 - proofs that the checker is sound and complete against the stated definition; and
 - a second, path-based definition proved equivalent to the former.
 
-In short, Lean now checks both the algorithm and what we mean by *query
-inclusion*.
+In short, the repo now has formalization of both the inclusion checker algorithm and what
+we mean by *query inclusion*.
 
 This work continues an earlier response-shape comparison algorithm that I wrote
 for the
@@ -180,7 +255,7 @@ The
 relation matches response names,
 [`sameFieldProvenance`](https://github.com/duckki/GraphQL.lean/blob/e62c87f4164415a073192ded1a2a78677f7c4749/GraphQL/Theories/QueryInclusion.lean#L60-L73),
 list positions, and child values recursively. The annotated executor is a proof
-instrument: it follows the spec-based executor but retains the information that
+instrument: it mirrors the spec-based executor but retains the information that
 a plain JSON response erases.
 
 ## The semantic specification
@@ -263,8 +338,8 @@ structure resembles [complete query normalization](https://github.com/duckki/gra
 
 The optimized
 [`includesBool`](https://github.com/duckki/GraphQL.lean/blob/e62c87f4164415a073192ded1a2a78677f7c4749/GraphQL/Theories/QueryInclusion.lean#L760-L775)
-checker takes a more local route. It does not normalize the operations or
-construct response shapes up front. Instead it:
+checker keeps case splits over conditions local and incremental. It does not
+normalize the operations or construct response shapes up front. Instead it:
 
 1. flattens selections into conditioned fields;
 2. groups that stream once by response name;
@@ -412,24 +487,24 @@ types.
 requires an argument-coercible environment for each Boolean branch examined by
 the checker.
 
-These premises let the proof construct error-free executions that expose a
-missing path. They play a different role from the error checks inside `includes`:
-the relation ignores response pairs with execution errors, while the
+These premises complement the error-free checks inside `includes`. The relation
+ignores response pairs with execution errors, while the
 completeness premises ensure that every syntactic comparison branch has an
-error-free witness. Without them, semantic inclusion can hold vacuously: a
-branch might have no possible runtime object, or every attempt to execute it
-might fail before producing an observable response field.
+error-free witness. Without them, semantic inclusion may hold vacuously because
+a branch has no possible runtime object or cannot execute successfully.
 
 Together, soundness and completeness say that `includesBool` decides the
 semantic relation for well-formed schemas and valid, inhabited, argument-ready
-operations. The checker itself is total on permissive raw syntax, but a
-production implementation should validate these preconditions or fall back when
-they are not established.
+operations. The checker itself is total on permissive raw syntax. Without the
+inhabitance or coercibility premises, acceptance remains sound, but rejection
+need not disprove semantic inclusion. A production API should check these
+preconditions and return an inconclusive result rather than `false` when they
+are not established.
 
 ## A second specification, without execution
 
 The execution-based definition is intuitive: run both queries everywhere and
-compare what they produce. But,it is not the only useful view.
+compare what they produce. But it is not the only useful view.
 
 [Martijn Walraven's PR](https://github.com/duckki/graphql-lean/pull/1)
 implements my earlier response-shape approach in Lean, based on the Apollo
@@ -475,13 +550,37 @@ response shape. It says directly: under every relevant Boolean assignment,
 every concrete response path selected by the required operation is also
 selected by the provided operation.
 
-The two inclusion definitions agree:
+The two inclusion definitions agree. In the `ResponsePath` namespace, bare
+`includes` is the path-based relation above, while `QueryInclusion.includes` is
+the execution-based relation. The correspondence is stated directly as
+[`IncludesSyntacticToSemantic` and
+`IncludesSemanticToSyntactic`](https://github.com/duckki/GraphQL.lean/blob/98d447363beeaab7105e51958bf994d0172eece2/GraphQL/Theories/ResponsePath.lean#L122-L143):
 
-- for a well-formed schema and valid operations, path inclusion implies
-  execution-based inclusion; and
-- with the additional inhabitance and argument-coercibility premises needed to
-  rule out vacuous executions, execution-based inclusion implies path
-  inclusion.
+```lean
+def IncludesSyntacticToSemantic
+    (schema : Schema) (left right : Operation) : Prop :=
+  SchemaWellFormedness.schemaWellFormed schema
+  -> Validation.operationDefinitionValid schema left
+  -> Validation.operationDefinitionValid schema right
+  -> includes schema left right
+  -> QueryInclusion.includes schema left right
+
+def IncludesSemanticToSyntactic
+    (schema : Schema) (left right : Operation) : Prop :=
+  SchemaWellFormedness.schemaWellFormed schema
+  -> Validation.operationDefinitionValid schema left
+  -> Validation.operationDefinitionValid schema right
+  -> QueryInclusion.operationCompositeFieldTypesInhabited schema left
+  -> QueryInclusion.operationCompositeFieldTypesInhabited schema right
+  -> QueryInclusion.comparisonBranchesArgumentCoercible schema left right
+  -> QueryInclusion.includes schema left right
+  -> includes schema left right
+```
+
+The first statement turns path inclusion into execution-based inclusion for a
+well-formed schema and valid operations. The reverse statement adds the
+inhabitance and argument-coercibility premises needed to rule out vacuous
+executions as in the `IncludesBoolComplete` statement above.
 
 This correspondence is valuable beyond having another theorem. The two
 definitions approach the same concept from opposite directions. One starts
@@ -492,23 +591,22 @@ conditions, field merging, or recursive child selections.
 
 ## What the formalization changed
 
-The checker was not the hard part. A straightforward reference implementation
-became the stepping stone for stating soundness and completeness precisely. The
-hard part was discovering the exact relation the checker could decide and the
-premises each theorem required.
+Implementing the checker was not the hard part. The hard part was discovering
+the exact relation the checker could decide and the premises each theorem
+required.
 
-The failed completeness proof exposed that plain responses lose resolver
-provenance. Null bubbling exposed why response projection needs a success
-boundary. Defaults exposed why shared variable definitions belong in the
-relation. Empty composite types and failed argument coercion exposed where
-semantic inclusion can become vacuous.
+The failed completeness proof exposed that plain responses lose resolver provenance. Null
+bubbling and argument coercion exposed why response projection needs a
+successful-execution precondition. Defaults exposed why the same shared variable
+definitions are needed in the relation. Empty composite types exposed where semantic
+inclusion can become vacuous.
 
 The finished theory now describes query inclusion in three mutually reinforcing
-ways: a semantic relation over annotated executions, a smaller relation over
-concrete response paths, and an executable checker proved sound and complete
-against both views. Each form serves a different purpose. Execution explains the
-meaning, paths expose the essential structure, and the checker makes the theory
-usable.
+ways: a semantic relation over annotated executions, a smaller syntactic
+relation over concrete response paths, and an executable checker proved sound
+and complete against both views. Each form serves a different purpose. Execution
+explains the meaning, paths expose the essential structure, and the checker
+makes the theory usable.
 
 The optimized checker was also ported to Rust and tested differentially against
 a native Lean oracle. The complete 26,880-case modeled corpus produced exact
@@ -516,12 +614,7 @@ agreement, while a separate full-GraphQL lane checks that named fragments behave
 like their inlined equivalents. The Lean checker is machine-proved; the fuzzing
 provides strong behavioral evidence that the Rust port matches it over the
 exercised domain. The resulting implementation is also more efficient than my
-original response-shape algorithm.
-
-One development lesson deserves a separate treatment: once the specification
-and proofs were stable, an AI agent could work much more autonomously on
-optimization, profiling, porting, and fuzzing. I will return to that story in a
-separate post.
+original 2025 response-shape algorithm.
 
 For query inclusion, the result is more than a function. It is a checked account
 of what inclusion means, the conditions under which it can be decided, and a
