@@ -38,12 +38,13 @@ task proof: :build do
   )
 end
 
-desc "Check GraphQL SDL directive highlighting"
+desc "Check custom GraphQL highlighting"
 task highlighting: :build do
   html = File.read(GRAPHQL_DIRECTIVE_POST)
   expected = [
-    '<span class="k">@cost</span>',
+    '<span class="nd">@cost</span>',
     '<span class="s2">"2"</span><span class="p">)</span>',
+    '<span class="nl">label</span><span class="p">:</span>',
   ]
   broken = [
     '<span class="err">@</span><span class="n">cost</span>',
@@ -52,7 +53,7 @@ task highlighting: :build do
 
   unless expected.all? { |markup| html.include?(markup) } &&
       broken.none? { |markup| html.include?(markup) }
-    raise "GraphQL SDL directives were not highlighted correctly"
+    raise "GraphQL syntax was not highlighted correctly"
   end
 end
 

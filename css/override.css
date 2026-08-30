@@ -784,6 +784,27 @@ pre code,
   color: #dcdcaa;
 }
 
+.language-graphql .highlight .nv {
+  color: #9cdcfe;
+}
+
+.language-graphql .highlight .na,
+.language-graphql .highlight .ni {
+  color: #dcdcaa;
+}
+
+.language-graphql .highlight .n {
+  color: #d4d4d4;
+}
+
+.language-graphql .highlight .nd {
+  color: #c586c0;
+}
+
+.language-graphql .highlight .nl {
+  color: #d6b49c;
+}
+
 .share-links {
   align-items: center;
   border-bottom: 1px solid var(--border);
