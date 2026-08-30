@@ -669,6 +669,10 @@ pre code,
   padding: 0;
 }
 
+.highlight code span {
+  font-weight: 400 !important;
+}
+
 .highlight .c,
 .highlight .c1,
 .highlight .cm,
@@ -753,6 +757,20 @@ pre code,
 .language-lean .highlight .err {
   background: transparent;
   color: var(--code-text);
+}
+
+.language-lean .highlight .kt {
+  color: #4ec9b0;
+}
+
+.language-lean .highlight .nv {
+  color: #9cdcfe;
+}
+
+.language-lean .highlight .na,
+.language-lean .highlight .nd,
+.language-lean .highlight .ni {
+  color: #dcdcaa;
 }
 
 .share-links {
