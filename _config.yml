@@ -46,6 +46,10 @@ kramdown:
 
 sass:
   style: compressed
+  sourcemap: never
+  quiet_deps: true
+  silence_deprecations:
+    - import
 
 defaults:
   - scope:
