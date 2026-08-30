@@ -1,3 +1,9 @@
+PATH
+  remote: _plugins/rouge-graphql-directives
+  specs:
+    rouge-graphql-directives (0.1.0)
+      rouge (~> 3.30)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -353,6 +359,7 @@ DEPENDENCIES
   github-pages (~> 232)
   html-proofer (~> 5.2)
   rake (~> 13.4)
+  rouge-graphql-directives!
 
 CHECKSUMS
   Ascii85 (2.0.1) sha256=15cb5d941808543cbb9e7e6aea3c8ec3877f154c3461e8b3673e97f7ecedbe5a
@@ -468,6 +475,7 @@ CHECKSUMS
   rb-inotify (0.11.1) sha256=a0a700441239b0ff18eb65e3866236cd78613d6b9f78fea1f9ac47a85e47be6e
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   rouge (3.30.0) sha256=a3d353222aa72e49e2c86726c0bcfd719f82592f57d494474655f48e669eceb6
+  rouge-graphql-directives (0.1.0)
   ruby-rc4 (0.1.5) sha256=00cc40a39d20b53f5459e7ea006a92cf584e9bc275e2a6f7aa1515510e896c03
   rubyzip (2.4.1) sha256=8577c88edc1fde8935eb91064c5cb1aef9ad5494b940cf19c775ee833e075615
   safe_yaml (1.0.5) sha256=a6ac2d64b7eb027bdeeca1851fe7e7af0d668e133e8a88066a0c6f7087d9f848

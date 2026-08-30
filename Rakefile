@@ -2,6 +2,10 @@ require "html-proofer"
 require "rake"
 
 SITE_DIR = "./_site"
+GRAPHQL_DIRECTIVE_POST = File.join(
+  SITE_DIR,
+  "2026/08/30/static-analysis-for-graphql-verified-in-lean.html",
+)
 SHARE_URLS = [
   %r{linkedin\.com/sharing/share-offsite},
 ].freeze
@@ -34,6 +38,24 @@ task proof: :build do
   )
 end
 
+desc "Check GraphQL SDL directive highlighting"
+task highlighting: :build do
+  html = File.read(GRAPHQL_DIRECTIVE_POST)
+  expected = [
+    '<span class="k">@cost</span>',
+    '<span class="s2">"2"</span><span class="p">)</span>',
+  ]
+  broken = [
+    '<span class="err">@</span><span class="n">cost</span>',
+    '<span class="err">"2")</span>',
+  ]
+
+  unless expected.all? { |markup| html.include?(markup) } &&
+      broken.none? { |markup| html.include?(markup) }
+    raise "GraphQL SDL directives were not highlighted correctly"
+  end
+end
+
 desc "Validate generated HTML and external links"
 task links: :build do
   prove_site(
@@ -50,6 +72,6 @@ task links: :build do
 end
 
 desc "Run the deterministic site checks"
-task test: :proof
+task test: [:proof, :highlighting]
 
 task default: :test
