@@ -21,6 +21,14 @@ bundle exec jekyll serve --drafts --livereload
 
 Local notes that should never be published belong in `.scratch/`.
 
+## Rich content
+
+Use GitHub-style dollar delimiters for math. Put display math between `$$`
+delimiters on their own lines; inline math can use `$...$`.
+
+Use a fenced `mermaid` code block for diagrams. MathJax and Mermaid are loaded
+only on pages that contain the corresponding notation.
+
 ## Checks
 
 ```sh
