@@ -773,6 +773,17 @@ pre code,
   color: #dcdcaa;
 }
 
+.language-rust .highlight .nv {
+  color: #9cdcfe;
+}
+
+.language-rust .highlight .na,
+.language-rust .highlight .nf,
+.language-rust .highlight .ni,
+.language-rust .highlight .py {
+  color: #dcdcaa;
+}
+
 .share-links {
   align-items: center;
   border-bottom: 1px solid var(--border);
