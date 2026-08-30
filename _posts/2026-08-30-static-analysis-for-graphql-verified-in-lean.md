@@ -9,7 +9,7 @@ tags:
   - Static analysis
 ---
 
-<!-- cspell:words componentwise Formedness GraphQL GraphQL's graphql graphql-lean graphql-static-analysis overcounting preorder println sizedFields supergraph undercount undercounting -->
+<!-- cspell:words componentwise Formedness GraphQL GraphQL's graphql graphql-lean graphql-static-analysis mathit mathrm operatorname overcounting preorder println sizedFields supergraph undercount undercounting -->
 
 Several GraphQL implementations support the
 [IBM `@cost` directive](https://ibm.github.io/graphql-specs/cost-spec.html) or a
@@ -55,16 +55,16 @@ A naive analyzer can either overcount or undercount.
 Adding every spread independently double-counts `title` and combines the
 mutually exclusive object-type spreads:
 
-```text
+$$
 1 + 2 + (2 + 4) + 9 = 18
-```
+$$
 
 Treating all three spread conditions as alternatives instead misses that
 `Media.title` and `Film.duration` can happen together:
 
-```text
-1 + max(2, 2 + 4, 9) = 10
-```
+$$
+1 + \max(2, 2 + 4, 9) = 10
+$$
 
 The first result, `18`, is unnecessarily restrictive. The second result, `10`,
 is unsound.
@@ -88,11 +88,14 @@ This computation touches three different relationships:
 
 The complete bound is therefore:
 
-```text
-featured + max(Book case, Film case)
-       1 + max(2 + 4, 2 + 9)
-       1 + 11 = 12
-```
+$$
+\begin{aligned}
+\operatorname{featured} + \max(\text{Book case}, \text{Film case})
+  &= 1 + \max(2 + 4, 2 + 9) \\
+  &= 1 + 11 \\
+  &= 12
+\end{aligned}
+$$
 
 This small query captures the central problem of GraphQL static analysis: a
 query represents a family of possible response shapes, selected by runtime
@@ -136,18 +139,26 @@ users.
 
 The static estimate therefore assumes the largest permitted response:
 
-```text
-field cost = users + 5 * age = 1 + 5 * 2 = 11
-type cost  = Query + 5 * User = 1 + 5 * 1 = 6
-```
+$$
+\begin{aligned}
+\text{field cost} &= \operatorname{users} + 5 \cdot \operatorname{age}
+                   = 1 + 5 \cdot 2 = 11, \\
+\text{type cost}  &= \mathrm{Query} + 5 \cdot \mathrm{User}
+                   = 1 + 5 \cdot 1 = 6.
+\end{aligned}
+$$
 
 If the resolver actually returns only three users, the concrete response costs
 less:
 
-```text
-field cost = users + 3 * age = 1 + 3 * 2 = 7
-type cost  = Query + 3 * User = 1 + 3 * 1 = 4
-```
+$$
+\begin{aligned}
+\text{field cost} &= \operatorname{users} + 3 \cdot \operatorname{age}
+                   = 1 + 3 \cdot 2 = 7, \\
+\text{type cost}  &= \mathrm{Query} + 3 \cdot \mathrm{User}
+                   = 1 + 3 \cdot 1 = 4.
+\end{aligned}
+$$
 
 Static analysis does not try to predict that the resolver will return three
 users. Its job is to compute a field cost of `11` and a type cost of `6`: safe
@@ -231,12 +242,16 @@ Suppose `results` costs `1`, `a` costs `10`, and `b` costs `20`. With
 `{ "n": 4 }`, the query should have the same result as writing `limit: 4`.
 Only one object branch can apply, so the ideal IBM result is type/field `5/81`:
 
-```text
-field cost = results + 4 * max(a, b) = 1 + 4 * 20 = 81
-type cost  = Query + 4 returned objects = 1 + 4 = 5
-```
+$$
+\begin{aligned}
+\text{field cost} &= \operatorname{results} + 4 \cdot \max(a, b)
+                   = 1 + 4 \cdot 20 = 81, \\
+\text{type cost}  &= \mathrm{Query} + 4 \text{ returned objects}
+                   = 1 + 4 = 5.
+\end{aligned}
+$$
 
-The equivalent ideal router score is `4 * (1 + 20) = 84`; that metric counts
+The equivalent ideal router score is $4(1 + 20) = 84$; that metric counts
 the returned composite-field branch inside the list multiplier.
 
 - Hot Chocolate returned `2/21`, the size-one result. Its tested entry point did
@@ -357,10 +372,13 @@ query {
 
 The merged type contribution is:
 
-```text
-Book + Text + Author + Text
-  -7 +    5 +      1 +    5 = 4
-```
+$$
+\begin{aligned}
+\mathrm{Book} + \mathrm{Text} + \mathrm{Author} + \mathrm{Text}
+  &= -7 + 5 + 1 + 5 \\
+  &= 4.
+\end{aligned}
+$$
 
 Analyzing the two `book` occurrences independently duplicates the negative
 `Book` weight. The test query and already-merged query should have the same
@@ -541,13 +559,16 @@ query Example($details: Boolean!) {
 
 The extracted scope has this shape:
 
-```text
-Node scope
-  |-- field: id
-  |-- when runtime type is User
-  |     `-- field: name
-  `-- when $details is true
-        `-- field: email
+```mermaid
+flowchart TD
+  scope["Node scope"]
+  id["field: id"]
+  name["field: name"]
+  email["field: email"]
+
+  scope --> id
+  scope -->|on User| name
+  scope -->|$details is true| email
 ```
 
 The condition tree performs two useful canonicalizations before analysis:
@@ -647,19 +668,23 @@ every pixel.
 
 The `Example1` query is the smaller two-region version of this idea:
 
-```text
-{ Book } -> Media.title + Book.title + Book.pageCount
-{ Film } -> Media.title + Film.duration
-```
+$$
+\begin{aligned}
+\{\mathrm{Book}\} &\longmapsto
+  \mathrm{Media.title} + \mathrm{Book.title} + \mathrm{Book.pageCount}, \\
+\{\mathrm{Film}\} &\longmapsto
+  \mathrm{Media.title} + \mathrm{Film.duration}.
+\end{aligned}
+$$
 
 The `Book` region collects the two `title` occurrences into one call, then
 combines its cost with `pageCount`: `2 + 4 = 6`. The `Film` region combines
 `title` and `duration`: `2 + 9 = 11`. The regions are disjoint, so the traversal
 keeps the larger alternative and adds the root field:
 
-```text
-1 + max(2 + 4, 2 + 9) = 12
-```
+$$
+1 + \max(2 + 4, 2 + 9) = 12
+$$
 
 Boolean conditions follow the same principle when variable values are not
 supplied. A variable is decided only when the traversal reaches a relevant
@@ -695,12 +720,14 @@ operations.
 
 A response-field-count analysis is almost trivial:
 
-```text
-empty                = 0
-field(_, children)   = 1 + children
-combine(left, right) = left + right
-join(left, right)    = max(left, right)
-```
+$$
+\begin{aligned}
+\operatorname{empty} &= 0, \\
+\operatorname{field}({-}, \mathit{children}) &= 1 + \mathit{children}, \\
+\operatorname{combine}(\mathit{left}, \mathit{right}) &= \mathit{left} + \mathit{right}, \\
+\operatorname{join}(\mathit{left}, \mathit{right}) &= \max(\mathit{left}, \mathit{right}).
+\end{aligned}
+$$
 
 This follows an abstract-interpretation-style design. Concrete executions are
 approximated by abstract summaries. GraphQL context flows down through the
@@ -735,16 +762,20 @@ In other words, for every resolver implementation, variable input, and root
 value, the static summary approximates the executed response.
 
 The algebraic assumptions are smaller than their Lean encoding suggests. Let
-`a ≼ b` mean that `b` is at least as conservative as `a`; let `0`, `⊗`, `⊔`,
-and `F_g` denote `empty`, `combine`, `join`, and the transfer for field `g`:
+$a ≼ b$ mean that $b$ is at least as conservative as $a$; let $0$, $⊗$, $⊔$,
+and $F_g$ denote `empty`, `combine`, `join`, and the transfer for field `g`:
 
-```text
-(a ⊗ b) ⊗ c = a ⊗ (b ⊗ c)       a ⊗ b = b ⊗ a       0 ⊗ a = a
-
-a ≼ a ⊔ b       b ≼ a ⊔ b
-
-(a ⊔ b) ⊗ c ≼ (a ⊗ c) ⊔ (b ⊗ c)       F_g(a ⊔ b) ≼ F_g(a) ⊔ F_g(b)
-```
+$$
+\begin{aligned}
+(a \otimes b) \otimes c &= a \otimes (b \otimes c), &
+a \otimes b &= b \otimes a, &
+0 \otimes a &= a, \\
+a &\preceq a \sqcup b, &
+b &\preceq a \sqcup b, \\
+(a \sqcup b) \otimes c &\preceq (a \otimes c) \sqcup (b \otimes c), &
+F_g(a \sqcup b) &\preceq F_g(a) \sqcup F_g(b).
+\end{aligned}
+$$
 
 Together with the preorder, monotonicity, and concrete-transfer laws, these
 equations let the engine regroup simultaneous work and factor alternatives

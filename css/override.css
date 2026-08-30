@@ -37,6 +37,10 @@ body {
   line-height: 1.72;
 }
 
+mjx-container {
+  font-size: 100% !important;
+}
+
 mjx-container[display="true"] {
   margin-block: 1.7rem !important;
   max-width: 100%;
