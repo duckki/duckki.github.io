@@ -584,9 +584,6 @@ Nested conditions share their common paths in the same way. Boolean edges retain
 the variable name, ensuring that repeated uses of `$details` make one shared
 choice rather than independent choices.
 
-The Rust port implements the same preprocessing in
-[`ConditionTree::extract`](https://github.com/duckki/graphql-static-analysis-rs/blob/f0da21cba289f196c729a62df796e492baf2f560/src/engine/condition_tree.rs#L59-L95).
-
 ### Traversing overlapping conditions
 
 The traversal decides whether condition-tree branches can be active together.
@@ -722,10 +719,10 @@ A response-field-count analysis is almost trivial:
 
 $$
 \begin{aligned}
-\operatorname{empty} &= 0, \\
-\operatorname{field}({-}, \mathit{children}) &= 1 + \mathit{children}, \\
-\operatorname{combine}(\mathit{left}, \mathit{right}) &= \mathit{left} + \mathit{right}, \\
-\operatorname{join}(\mathit{left}, \mathit{right}) &= \max(\mathit{left}, \mathit{right}).
+\operatorname{empty} &= 0 \\[0.5em]
+\operatorname{field}({-}, \mathit{children}) &= 1 + \mathit{children} \\[0.5em]
+\operatorname{combine}(\mathit{left}, \mathit{right}) &= \mathit{left} + \mathit{right} \\[0.5em]
+\operatorname{join}(\mathit{left}, \mathit{right}) &= \max(\mathit{left}, \mathit{right})
 \end{aligned}
 $$
 
@@ -762,18 +759,19 @@ In other words, for every resolver implementation, variable input, and root
 value, the static summary approximates the executed response.
 
 The algebraic assumptions are smaller than their Lean encoding suggests. Let
-$a ≼ b$ mean that $b$ is at least as conservative as $a$; let $0$, $⊗$, $⊔$,
-and $F_g$ denote `empty`, `combine`, `join`, and the transfer for field `g`:
+$a ≼ b$ mean that $b$ is at least as conservative as $a$. Let $0$, $⊗$, $⊔$,
+and $F_g$ denote `empty`, `combine`, `join`, and the `field` function for
+group $g$, respectively:
 
 $$
 \begin{aligned}
-(a \otimes b) \otimes c &= a \otimes (b \otimes c), &
-a \otimes b &= b \otimes a, &
-0 \otimes a &= a, \\
-a &\preceq a \sqcup b, &
-b &\preceq a \sqcup b, \\
-(a \sqcup b) \otimes c &\preceq (a \otimes c) \sqcup (b \otimes c), &
-F_g(a \sqcup b) &\preceq F_g(a) \sqcup F_g(b).
+(a \otimes b) \otimes c &= a \otimes (b \otimes c) &
+a \otimes b &= b \otimes a &
+0 \otimes a &= a \\[1em]
+a &\preceq a \sqcup b &
+b &\preceq a \sqcup b \\[1em]
+(a \sqcup b) \otimes c &\preceq (a \otimes c) \sqcup (b \otimes c) &
+F_g(a \sqcup b) &\preceq F_g(a) \sqcup F_g(b)
 \end{aligned}
 $$
 
@@ -781,7 +779,7 @@ Together with the preorder, monotonicity, and concrete-transfer laws, these
 equations let the engine regroup simultaneous work and factor alternatives
 without losing soundness. The generic proof carries those local facts through
 directives, type regions, response-name merging, and recursive selections.
-Analogous [`best-transfer laws`](https://github.com/duckki/graphql-lean/blob/06a5d04d6c00b875d7da9c1c4f1c148b32191f0d/GraphQL/Theories/TreeSummary/ExactCasesOptimality.lean#L96-L120)
+Analogous [`BestTransferLaws`](https://github.com/duckki/graphql-lean/blob/06a5d04d6c00b875d7da9c1c4f1c148b32191f0d/GraphQL/Theories/TreeSummary/ExactCasesOptimality.lean#L96-L120)
 give the optimality result.
 
 ### The result for IBM cost
@@ -830,19 +828,6 @@ This is structural optimality over the modeled outcomes. It does not assert that
 every modeled outcome is realizable by some resolver; it says the engine
 computes the best bound expressible within the analysis model.
 
-The bottom line is that both implementations reach all six ideal results
-introduced earlier. The scorecard uses the same columns as the implementation
-comparison:
-
-| Implementation | C1 | C2 | C3 | C4 | C5 | C6 | Score |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | ---: |
-| `graphql-lean` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| Rust port | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-
-These examples do not constitute the proof—the Lean theorems quantify over all
-modeled inputs. They make the consequences of those theorems concrete and show
-that the separate Rust port preserves the same outcomes in the study.
-
 ## From the verified blueprint to a practical Rust engine
 
 The Lean formalization and production-oriented implementation live in separate
@@ -856,9 +841,10 @@ operates over
 [`apollo-compiler`](https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-compiler)
 schemas and validated operations.
 
-The
+The Rust port includes the generic analysis engine and an implementation of the
+IBM GraphQL Cost Directives specification. Its
 [`CostEstimator`](https://github.com/duckki/graphql-static-analysis-rs/blob/f0da21cba289f196c729a62df796e492baf2f560/src/analyses/cost/estimator.rs#L27-L97)
-has a small API. Here's an example usage:
+has a small API:
 
 ```rust
 use graphql_static_analysis::cost::{CostEstimator, CostModel};
@@ -880,8 +866,17 @@ feasible condition cases, recursively collected-field traces, and IBM cost. The
 Rust results agree with the pinned Lean model throughout that bounded profile.
 Coverage-guided fuzzing exercises the same oracle protocol.
 
-That is strong evidence that the separate implementation follows the verified
-blueprint. It is not a universal proof of Rust equivalence.
+The scorecard makes the agreement between the verified model and the Rust port
+concrete. It uses the same columns as the implementation comparison:
+
+| Implementation | C1 | C2 | C3 | C4 | C5 | C6 | Score |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | ---: |
+| `graphql-lean` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
+| Rust port | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
+
+The six cases are examples, not a proof that the Rust port is correct. The
+differential-fuzzing profile provides stronger, bounded evidence that the port
+follows the verified Lean model.
 
 ### Performance in context
 
@@ -909,7 +904,7 @@ The concrete-runtime-type-precise implementations provide additional context:
 | Hot Chocolate 16.6.2 | `246→2,357 µs` (`9.58×`) | `247→2,673 µs` (`10.82×`) |
 | Cosmo core (`graphql-go-tools` 2.18.0) | `14.4→157.9 µs` (`10.98×`) | `14.4→67.1 µs` (`4.66×`) |
 
-The fine print matters:
+A few qualifications:
 
 - The scale factors compare each implementation with itself; they are not
   cross-language speed ratios.
@@ -996,13 +991,13 @@ of functions without reimplementing subtle GraphQL semantics. Once those
 functions satisfy the required algebraic laws, the framework guarantees
 soundness and the best bound expressible within the analysis model.
 
-An analysis does not have to be formalized to use the Rust engine. When
-machine-checked guarantees matter, its algebra and laws can be implemented and
-proved in Lean.
-
 The separate Rust implementation is fast, open source, and fuzz-tested against
 the executable Lean oracle. It brings the verified blueprint into a practical
 GraphQL library.
+
+A new analysis does not have to be formalized to use the Rust engine. When
+machine-checked guarantees matter, its algebra and laws can be implemented and
+proved in Lean.
 
 Need the engine in another language? The Lean model provides an executable
 reference, and the Rust port
