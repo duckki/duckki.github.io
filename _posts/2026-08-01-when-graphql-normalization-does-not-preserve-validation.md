@@ -345,4 +345,4 @@ The definitions and proofs are in
 [`GraphQL/Theories/NormalForm.lean`](https://github.com/duckki/graphql-lean/blob/main/GraphQL/Theories/NormalForm.lean),
 [`Proofs/GraphQL/Theories/NormalForm/CompleteNormalization`](https://github.com/duckki/graphql-lean/tree/main/Proofs/GraphQL/Theories/NormalForm/CompleteNormalization),
 and the project's
-[normal-form documentation](https://github.com/duckki/graphql-lean/blob/main/docs/normal-form.md).
+[normal-form documentation](https://github.com/duckki/graphql-lean/blob/main/docs/theories/normal-form.md).
