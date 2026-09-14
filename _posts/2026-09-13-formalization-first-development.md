@@ -161,7 +161,9 @@ theorem uniformAccuracy (m : Message) (time : UInt64)
 ```
 
 [**`evaluate`**](https://github.com/duckki/chebyshev-ephemeris/blob/195eb406de11ad1102ce6df0b746ef84c2a0cbba/Ephemeris/Implementation/Float/PositionReconstruction.lean#L41)
-is the Lean implementation of the receiver.
+is the floating-point implementation of the receiver, and
+[**`reconstruct`**](https://github.com/duckki/chebyshev-ephemeris/blob/195eb406de11ad1102ce6df0b746ef84c2a0cbba/Ephemeris/Definitions/PositionReconstruction.lean#L116)
+is the real-number specification.
 The helper `Binary64Within` includes finite coordinates and the per-axis error
 bound. Together, these statements specify the complete evaluator: accepted
 input, successful return, finite output, and a uniform accuracy bound against

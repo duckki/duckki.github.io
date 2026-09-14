@@ -23,6 +23,7 @@ lean.keywords.merge(%w[
   macro
   mutual
   nomatch
+  noncomputable
   partial
   return
   structure
