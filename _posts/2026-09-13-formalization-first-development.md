@@ -107,7 +107,7 @@ p_k(t) &= \sum_{i=0}^{10} a_{k,i}T_i(x(t)),
 \end{aligned}
 $$
 
-The real-number Lean specification keeps the same pieces separate:
+Here is the corresponding real-number specification in Lean:
 
 ```lean
 def normalizeEpoch (jdMin jdMax t : ℝ) : ℝ :=
@@ -128,48 +128,6 @@ The normalization, base cases, recurrence, and coordinate sum each have a clear
 counterpart. A domain expert can compare the paper and specification one item
 at a time, before considering floating-point code or control flow.
 
-### Operational assumptions become predicates
-
-Before implementing that arithmetic, we need to say exactly which messages the
-receiver supports. The paper supplies the field allocation and the
-11-coefficient profile. The project makes the remaining choices—such as signed
-coefficient ranges and accepted validity codes—explicit.
-
-Here is the heart of that definition in Lean, shortened by removing namespace
-prefixes:
-
-```lean
-def CoefficientFits (value : Int32) (width : Nat) : Prop :=
-  -(2 : ℤ) ^ (width - 1) ≤ value.toInt ∧
-    value.toInt < (2 : ℤ) ^ (width - 1)
-
-def ValidMessage (m : Message) : Prop :=
-  m.dayOffset.toNat < 2 ^ dayBits ∧
-  m.secondOfDay.toNat < 86400 ∧
-  1 ≤ m.validityCode.toNat ∧
-  m.validityCode.toNat < 2 ^ validityBits ∧
-  ∀ axis ∈ [m.coefficients.x, m.coefficients.y, m.coefficients.z],
-    axis.size = 11 ∧
-    ∀ i < 11,
-      CoefficientFits (axis.getD i 0)
-        (oneHourCoefficientWidths.getD i 5)
-```
-
-`Prop` means that these definitions are mathematical propositions. The two
-`∀` clauses say that every coordinate array has exactly 11 entries and every
-coefficient fits the bit width assigned to its position.
-
-Python or Rust can perform the same checks with loops and branches. Lean can
-also use the declarative specification as a premise in a machine-checked
-theorem.
-That gives a reviewer a compact artifact to inspect: field ranges, array shape,
-and coefficient bounds are all visible in one place. If a source detail is
-ambiguous, the predicate must choose a precise interpretation that the reviewer
-can accept or correct.
-
-`ValidMessage` then becomes one of the assumptions of the main correctness
-theorem.
-
 ## Prove the whole receiver, not a toy property
 
 After reviewing what the algorithm means, the next question is what the actual
@@ -187,6 +145,10 @@ $$
 \end{aligned}
 $$
 
+Here, `ValidMessage` means that the message
+has the supported field ranges and coefficient layout, while `InWindow` means
+that the query falls within its validity period.
+
 The Lean theorem has the same structure:
 
 ```lean
@@ -198,10 +160,12 @@ theorem uniformAccuracy (m : Message) (time : UInt64)
     Binary64Within result (reconstruct m time) (1 / 100000)
 ```
 
+[**`evaluate`**](https://github.com/duckki/chebyshev-ephemeris/blob/195eb406de11ad1102ce6df0b746ef84c2a0cbba/Ephemeris/Implementation/Float/PositionReconstruction.lean#L41)
+is the Lean implementation of the receiver.
 The helper `Binary64Within` includes finite coordinates and the per-axis error
 bound. Together, these statements specify the complete evaluator: accepted
 input, successful return, finite output, and a uniform accuracy bound against
-the real-number specification. This is a guarantee about the complete software
+the real-number specification. This is a guarantee about the complete
 function, not just one example or an intermediate algebraic property.
 
 It verifies position reconstruction from a decoded message, not the entire
@@ -233,7 +197,7 @@ is no longer the only evidence for its correctness.
 
 The project has a mathematical real specification, a floating-point model,
 native Lean code, and Python and Rust ports. The proof covers the floating-point
-model and its native Lean execution. I checked the ports using differential
+model and its native Lean execution. An AI agent checked the ports using differential
 fuzz testing, an established technique that runs generated inputs through
 multiple implementations and compares the results. A recorded campaign ran
 30,464 requests across all four evaluators. Of those, 20,177 produced positions;
@@ -264,8 +228,8 @@ microseconds apart, so a one-microsecond query offset can disappear.
 
 For one constructed valid message, the plausible mistake produces about 0.56
 millimeters of position error: 55.6 times the theorem's 10-micrometer limit.
-This is not a reported bug in a deployed system. It demonstrates the kind of
-ordinary implementation mistake that the whole-function theorem rules out.
+It demonstrates the kind of ordinary implementation mistake that the whole-function
+theorem rules out.
 
 ## What changes for the reviewer
 
