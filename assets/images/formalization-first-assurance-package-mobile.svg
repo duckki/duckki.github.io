@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1180" viewBox="0 0 720 1180" role="img" aria-labelledby="title desc">
+  <title id="title">Formalization-first development</title>
+  <desc id="desc">A paper passes through human review into a Lean source containing a formal specification, implementation, whole-function theorem, and machine-checked proof. The verified Lean source fans out to checked Python, Rust, JavaScript, and other production targets.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#242424"/>
+      <stop offset="1" stop-color="#1b1b1b"/>
+    </linearGradient>
+    <linearGradient id="lean-panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#26313a"/>
+      <stop offset="1" stop-color="#23262b"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0v8l11-4z" fill="#9cdcfe"/>
+    </marker>
+    <style>
+      .title { fill: #cccccc; font: 600 31px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .lane { fill: #858585; font: 600 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 2px; }
+      .label { fill: #cccccc; font: 500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .lean-label { fill: #9cdcfe; font: 600 23px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 4px; }
+      .symbol { fill: #dcdcaa; font: 500 40px Georgia, "Times New Roman", serif; text-anchor: middle; }
+      .target { fill: #d4d4d4; font: 600 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .flow { fill: none; stroke: #9cdcfe; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); }
+      .inside { fill: none; stroke: #858585; stroke-width: 3; stroke-linecap: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="720" height="1180" rx="24" fill="url(#background)"/>
+  <text x="360" y="54" class="title" text-anchor="middle">Formalization-first development</text>
+
+  <!-- Intent and human review. -->
+  <g filter="url(#soft-shadow)">
+    <path d="M254 92h148l44 44v184H254z" fill="#292929" stroke="#858585" stroke-width="2.5"/>
+    <path d="M402 92v44h44" fill="#343434" stroke="#858585" stroke-width="2.5"/>
+    <path d="M282 162h136M282 254h136M282 280h90" stroke="#6b6b6b" stroke-width="6" stroke-linecap="round"/>
+    <path d="M282 201c20-28 41 28 62 0s41 28 62 0" fill="none" stroke="#c586c0" stroke-width="5" stroke-linecap="round"/>
+    <text x="303" y="241" fill="#dcdcaa" font-family="Georgia, serif" font-size="27">Σ aᵢTᵢ(x)</text>
+  </g>
+  <text x="350" y="348" class="lane" text-anchor="middle">HUMAN INTENT</text>
+
+  <path d="M350 365v51" class="flow"/>
+  <g transform="translate(388 371)">
+    <path d="M0 18C12 2 38 2 50 18 38 34 12 34 0 18z" fill="#292929" stroke="#c586c0" stroke-width="2.5"/>
+    <circle cx="25" cy="18" r="8" fill="#c586c0"/>
+    <circle cx="25" cy="18" r="3" fill="#1f1f1f"/>
+  </g>
+  <text x="475" y="397" class="lane" fill="#c586c0">REVIEW</text>
+
+  <!-- Reviewed Lean source. -->
+  <g filter="url(#soft-shadow)">
+    <rect x="62" y="429" width="596" height="445" rx="30" fill="url(#lean-panel)" stroke="#569cd6" stroke-width="3"/>
+    <rect x="270" y="407" width="180" height="49" rx="24.5" fill="#1f1f1f" stroke="#569cd6" stroke-width="2.5"/>
+    <text x="360" y="439" class="lean-label" text-anchor="middle">LEAN</text>
+  </g>
+
+  <circle cx="210" cy="559" r="65" fill="#292929" stroke="#569cd6" stroke-width="3"/>
+  <text x="210" y="573" class="symbol">Σ</text>
+  <text x="210" y="651" class="label" text-anchor="middle">specification</text>
+
+  <circle cx="510" cy="559" r="65" fill="#292929" stroke="#c586c0" stroke-width="3"/>
+  <text x="510" y="573" class="symbol">λ</text>
+  <text x="510" y="651" class="label" text-anchor="middle">implementation</text>
+
+  <path d="M251 610c20 28 43 36 64 41" class="inside"/>
+  <path d="M469 610c-20 28-43 36-64 41" class="inside"/>
+
+  <path d="M360 641l78 45-78 45-78-45z" fill="#292929" stroke="#569cd6" stroke-width="3"/>
+  <text x="360" y="700" class="symbol">∀</text>
+  <text x="386" y="770" class="label">whole-function theorem</text>
+  <path d="M360 734v49" class="inside"/>
+
+  <g transform="translate(318 786)">
+    <path d="M42 0c20 14 42 16 42 16v27c0 32-20 51-42 63C20 94 0 75 0 43V16S22 14 42 0z" fill="#263027" stroke="#6a9955" stroke-width="3"/>
+    <path d="m21 49 13 13 28-31" fill="none" stroke="#b5cea8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Production targets. -->
+  <path d="M360 875v56" class="flow"/>
+  <text x="360" y="969" class="lane" text-anchor="middle">PRODUCTION TARGETS</text>
+  <path d="M360 988v21M360 1009H137v28M360 1009h223v28M360 1009v28" fill="none" stroke="#c586c0" stroke-width="3" stroke-linecap="round"/>
+
+  <g filter="url(#soft-shadow)">
+    <circle cx="137" cy="1084" r="52" fill="#292929" stroke="#c586c0" stroke-width="3"/>
+    <text x="137" y="1092" class="target">Py</text>
+    <circle cx="360" cy="1084" r="52" fill="#292929" stroke="#c586c0" stroke-width="3"/>
+    <text x="360" y="1092" class="target">Rust</text>
+    <circle cx="583" cy="1084" r="52" fill="#292929" stroke="#c586c0" stroke-width="3"/>
+    <text x="583" y="1092" class="target">JS ···</text>
+  </g>
+
+  <path d="M164 1140h392" fill="none" stroke="#6a9955" stroke-width="3" stroke-dasharray="8 9" stroke-linecap="round"/>
+  <g transform="translate(345 1124)">
+    <circle cx="15" cy="15" r="14" fill="#263027" stroke="#6a9955" stroke-width="2"/>
+    <path d="m8 15 5 5 10-12" fill="none" stroke="#b5cea8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

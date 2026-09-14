@@ -14,8 +14,8 @@ tags:
 
 A friend who works in
 [orbit determination and guidance, navigation, and control](https://www.nasa.gov/reference/jsc-guidance-navigation-control-subsystems/)
-(OD/GNC) asked Claude whether formal methods would be useful in his field. The
-answer was skeptical—or at least reserved.
+(OD/GNC) asked Claude whether formal methods would be useful for everyday software
+engineering in his field. The answer was skeptical—or at least reserved.
 
 That was fair. OD/GNC software sits on top of physical models, noisy sensors,
 numerical solvers, estimation algorithms, and operational assumptions. Proving
@@ -24,7 +24,7 @@ spacecraft will go where we want it to go.
 
 So I set myself a more concrete challenge: **Can an AI agent take an algorithm
 from an OD/GNC paper, implement it, and prove a meaningful correctness property
-about the complete software function?**
+about the complete software function in one afternoon?**
 
 I more or less randomly chose Bury, Zajdel, and Sośnica's paper,
 ["Design of the broadcast ephemerides for the Lunar Communication and
@@ -54,11 +54,24 @@ describes spec-driven development as making the specification the primary
 artifact and letting the implementation follow from it. That direction makes
 particular sense for AI: settle what we mean, then ask the agent to build it.
 
-This project follows that idea in a particularly literal way: paper to Lean
-specification, Lean specification to proved Lean implementation, and Lean
-implementation to Python and Rust. *Formalization-first development* makes the
-specification formal and machine-checkable before producing the familiar
-implementation artifacts. It adds two things to the package:
+Formalization-first development follows that idea in a particularly literal
+way:
+
+```text
+Spec-driven:
+human intent → specification → implementation
+
+Formalization-first:
+human intent → Lean specification + implementation + proof
+             → production target languages
+```
+
+For the algorithm itself, Lean is the development language: it is where I
+specify, implement, prove, and perform the main semantic review. Python, Rust,
+JavaScript, and other languages are becoming more like compile targets—almost
+like instruction set architectures (ISAs) for their runtime environments.
+
+Formalization-first development adds two defining artifacts to the package:
 
 - a **formal specification** that gives the intended behavior a precise,
   machine-readable meaning;
@@ -81,7 +94,27 @@ agent carries out the work from reviewed inputs and constraints.
   how much design direction the human wants to provide.
 - Porting the reviewed Lean implementation to other languages is AI-driven.
 
-![A flow diagram shows a paper becoming a Lean specification, a correctness statement, and a machine-checked proof, followed by a proved Lean reference and peer production implementations in Python, Rust, JavaScript, or other languages.](/assets/images/formalization-first-assurance-package.svg)
+<figure class="assurance-package-figure">
+  <picture>
+    <source
+      media="(max-width: 600px)"
+      srcset="{{ '/assets/images/formalization-first-assurance-package-mobile.svg' | relative_url }}"
+      width="720"
+      height="1180"
+    >
+    <img
+      src="{{ '/assets/images/formalization-first-assurance-package.svg' | relative_url }}"
+      alt="Human intent becomes a reviewed Lean specification, implementation, theorem, and proof, then fans out to Python, Rust, JavaScript, and other production targets checked against Lean."
+      width="1200"
+      height="520"
+      loading="lazy"
+    >
+  </picture>
+  <figcaption>
+    Review intent and correctness in Lean; treat production languages as checked
+    deployment targets.
+  </figcaption>
+</figure>
 
 The formal artifacts do not replace the production code. The specification and
 proof travel with it as an assurance package.
@@ -174,7 +207,7 @@ It verifies position reconstruction from a decoded message, not the entire
 orbit-determination pipeline. That is the point: prove one whole software
 function and state exactly what the proof covers.
 
-## The production code stays the same
+## Production languages become compile targets
 
 The core Python loop is unsurprising:
 
@@ -193,9 +226,11 @@ for axis in message.coefficients:
     position.append(total)
 ```
 
-You review this code as usual: operation order, validation, types, error
-handling, integration, and maintainability. But you no longer have to establish
-the algorithm's numerical correctness from code review alone.
+Today I still inspect target code for integration, operation order, validation,
+types, error handling, and language-specific hazards. These ports were produced
+by AI and checked through differential fuzzing, not emitted by a verified
+compiler. But I no longer ask Python or Rust code review to establish the
+algorithm's mathematical correctness from scratch. That argument lives in Lean.
 
 The project has a mathematical real specification, a floating-point model,
 native Lean code, and Python and Rust ports. The proof connects the
@@ -206,8 +241,8 @@ campaign ran 30,464 requests across all four evaluators. Of those, 20,177
 produced positions; the rest exercised rejection behavior. For successful
 queries, all native implementations agreed bit for bit.
 
-This provides practical assurance that the ports preserve the verified Lean
-behavior. As tooling and techniques improve, this step may eventually be
+This provides strong empirical evidence that the ports preserve the verified
+Lean behavior. As tooling and techniques improve, this step may eventually be
 strengthened with a full, machine-checked proof of mathematical equivalence
 across languages.
 
@@ -242,7 +277,7 @@ burden by separating it into smaller questions:
 | --- | --- | --- |
 | Formal specification | Does this faithfully capture the intent? | Lean makes every definition precise and type-checkable. |
 | Whole-function theorem | Is this the guarantee we actually need, over the right inputs? | Lean checks that the proved implementation satisfies it for every supported input. |
-| Lean, Python, and Rust code | Is the code maintainable and suitable for production? | Proof covers Lean; differential tests compare the ports against it. |
+| Lean source and production targets | Is the code maintainable and suitable for production? | Proof covers Lean; differential tests compare the ports against it. |
 
 The reviewer still brings domain expertise and software judgment, but no longer
 has to reconstruct the algorithm's correctness from implementation code alone.
@@ -252,25 +287,35 @@ Code review can focus on maintainability, integration, and language-specific
 risks. Differential fuzz testing provides additional evidence that the
 production ports preserve the proved behavior.
 
+For a mathematical function with a precise definition, asking a human to
+establish correctness by mentally executing generated target-language code is a
+poor use of scarce human attention. Code review remains
+essential for integration and language-specific risks—but reviewing it without
+formal assurance of correctness is unnecessarily expensive.
+
+Formalization-first development deliberately gives the AI more work so the
+human can review smaller, higher-leverage artifacts: intent, formal
+specification, and theorem statement.
+
 ## What it cost
 
-Producing the Lean, Python, and Rust implementation package took roughly half a
-day of AI-agent work before human review. It was not half a day of focused human
-engineering. The agent did most of the translating, implementing, proving,
-porting, testing, and refactoring while I periodically steered it and answered
-questions.
+I spent about one day working with an AI agent to finish the Lean, Python, and
+Rust implementation package. That was not an entire day of focused human
+engineering time: I did other things while the agent worked. The agent did most
+of the translating, implementing, proving, porting, testing, and refactoring
+while I periodically steered it and answered questions.
 
-I spent additional time searching for a suitable example and learning an
-unfamiliar paper and codebase. A domain expert with a clear target would not
-need that exploration. With reusable AI skills, much of the remaining
-interaction can also be automated. Compared with asking an agent for code alone,
-the LLM may need a few additional hours to produce the formal specification and
+With reusable AI skills, much of the remaining
+interaction can be automated even further. Compared with asking an agent for code alone,
+the agent may need a few additional hours to produce the formal specification and
 proofs. Human review remains a separate cost, but it begins with a much better
 package.
 
 ## Code, or code with evidence?
 
-For this project, formalization-first development produced:
+For this project, we did not just prove a recurrence lemma and declare victory.
+We proved the complete accepted floating-point receiver. Formalization-first
+development produced:
 
 - a recognizable real-number specification tied to the paper's algorithm;
 - a Lean floating-point implementation with a **whole-function guarantee**:
@@ -279,14 +324,16 @@ For this project, formalization-first development produced:
 - ordinary Python and Rust implementations, differentially tested against the
   proved Lean executions.
 
-The formal specification makes the intended algorithm easier to review. The
-theorem turns “correct” into a concrete promise. The proof checks that promise
-over the entire supported input space, including numerical cases that ordinary
-examples may miss. That moves exhaustive correctness reasoning out of
-line-by-line code review. Together, these artifacts form a durable assurance
-package that can be rechecked whenever the implementation changes.
+The formal specification makes the intended algorithm easier to review, the
+theorem turns “correct” into a concrete promise, and the proof checks that
+promise over the entire supported input space. Together, they form a durable
+assurance package that can be rechecked whenever the implementation changes.
 
-AI can already give us plausible code from prose. If the agent can also spend a
-few more hours assembling evidence, which deliverable would you rather receive:
-**the code alone, or the code together with its formal specification and a
-machine-checked proof that the whole function meets its stated guarantee?**
+That is my broader thesis: formal verification will be a key to software
+productivity with AI. Formalization-first converts a few more hours of agent
+work into a much better human review package: We inspect the intent,
+specification, and guarantee, then let Lean check that the implementation meets
+them. Which deliverable would you rather review: **code alone, or code with a
+precise formal specification and a machine-checked whole-function proof?**
+
+**Code and proofs are now both cheap. Verified correctness is the necessary artifact.**
