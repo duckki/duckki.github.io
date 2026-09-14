@@ -54,45 +54,22 @@ describes spec-driven development as making the specification the primary
 artifact and letting the implementation follow from it. That direction makes
 particular sense for AI: settle what we mean, then ask the agent to build it.
 
-Formalization-first development follows that idea in a particularly literal
-way:
-
-```text
-Spec-driven:
-human intent → specification → implementation
-
-Formalization-first:
-human intent → Lean specification + implementation + proof
-             → production target languages
-```
+Formalization-first strengthens that workflow by making the specification
+formal and requiring a proof that the implementation meets it. The pipeline is
+**human intent → Lean specification, implementation, and proof → production
+target languages**.
 
 For the algorithm itself, Lean is the development language: it is where I
 specify, implement, prove, and perform the main semantic review. Python, Rust,
 JavaScript, and other languages are becoming more like compile targets—almost
-like instruction set architectures (ISAs) for their runtime environments.
+like instruction set architectures (ISAs) for their runtime environments. Prose
+specifications still provide goals and context, and tests remain useful, but
+the formal specification and proof become part of the deliverable.
 
-Formalization-first development adds two defining artifacts to the package:
-
-- a **formal specification** that gives the intended behavior a precise,
-  machine-readable meaning;
-- a **formal proof** that the implementation satisfies that specification.
-
-A prose specification is still helpful, especially for goals, context, and
-decisions that are not mathematical. Tests remain valuable too. What changes is
-that a formal specification and proof become part of the deliverable.
-
-The human and AI roles differ at each step. Here, *AI-assisted* means that a
-person actively shapes the artifact with the agent; *AI-driven* means that the
-agent carries out the work from reviewed inputs and constraints.
-
-- Writing the Lean specification is AI-assisted. Human interaction matters
-  because this is where the intent is interpreted and ambiguities become
-  concrete choices.
-- Writing the Lean proof is AI-driven once the specification and intended
-  guarantee are settled.
-- Writing the Lean implementation can be AI-assisted or AI-driven, depending on
-  how much design direction the human wants to provide.
-- Porting the reviewed Lean implementation to other languages is AI-driven.
+Human interaction concentrates on interpreting intent and reviewing the
+specification and theorem. Once those are settled, AI can drive the proof and
+production-language ports; the Lean implementation can be human-shaped or
+AI-driven depending on how much design direction it needs.
 
 <figure class="assurance-package-figure">
   <picture>
@@ -115,9 +92,6 @@ agent carries out the work from reviewed inputs and constraints.
     deployment targets.
   </figcaption>
 </figure>
-
-The formal artifacts do not replace the production code. The specification and
-proof travel with it as an assurance package.
 
 ## The paper's math remains recognizable in Lean
 
