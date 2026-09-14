@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Formalization-first development deliverables</title>
+  <desc id="desc">Ordinary Lean and production-language implementation code is accompanied by a source-linked Lean specification, a correctness statement, a machine-checked proof, and differential tests.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#858585"/>
+    </marker>
+    <style>
+      .heading { fill: #cccccc; font: 600 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .lane { fill: #858585; font: 600 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 1.5px; }
+      .box-title { fill: #dcdcaa; font: 600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .box-copy { fill: #cccccc; font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #9cdcfe; font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .review { fill: #c586c0; font: 600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .check { fill: #b5cea8; font: 600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .flow { fill: none; stroke: #858585; stroke-width: 2; marker-end: url(#arrow); }
+      .link { fill: none; stroke: #569cd6; stroke-width: 2; stroke-dasharray: 7 6; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="620" rx="20" fill="#1f1f1f"/>
+  <text x="52" y="52" class="heading">Normal code, plus an assurance package</text>
+
+  <text x="52" y="112" class="lane">SOURCE OF TRUTH</text>
+  <rect x="52" y="135" width="210" height="130" rx="12" fill="#292929" stroke="#858585"/>
+  <text x="76" y="178" class="box-title">Paper or prose</text>
+  <text x="76" y="210" class="box-copy">Equations, definitions,</text>
+  <text x="76" y="232" class="box-copy">requirements and</text>
+  <text x="76" y="254" class="box-copy">assumptions</text>
+
+  <text x="330" y="112" class="lane">BONUS PACKAGE</text>
+  <rect x="330" y="135" width="240" height="130" rx="12" fill="#292929" stroke="#569cd6" stroke-width="2"/>
+  <text x="354" y="178" class="box-title">Lean specification</text>
+  <text x="354" y="210" class="box-copy">The same math, made</text>
+  <text x="354" y="234" class="box-copy">precise and executable</text>
+
+  <rect x="642" y="135" width="240" height="130" rx="12" fill="#292929" stroke="#569cd6" stroke-width="2"/>
+  <text x="666" y="178" class="box-title">Correctness contract</text>
+  <text x="666" y="210" class="box-copy">What must hold, for</text>
+  <text x="666" y="232" class="box-copy">which inputs, and</text>
+  <text x="666" y="254" class="box-copy">within what error</text>
+
+  <rect x="954" y="135" width="194" height="130" rx="12" fill="#292929" stroke="#6a9955" stroke-width="2"/>
+  <text x="978" y="178" class="box-title">Lean proof</text>
+  <text x="978" y="210" class="box-copy">Checked by Lean,</text>
+  <text x="978" y="234" class="box-copy">not sampled</text>
+
+  <path d="M262 200 H322" class="flow"/>
+  <path d="M570 200 H634" class="flow"/>
+  <path d="M882 200 H946" class="flow"/>
+  <text x="273" y="184" class="review">review</text>
+  <text x="895" y="184" class="check">check</text>
+
+  <text x="52" y="344" class="lane">IMPLEMENTATION CODE</text>
+  <rect x="330" y="368" width="240" height="130" rx="12" fill="#292929" stroke="#c586c0" stroke-width="2"/>
+  <text x="354" y="411" class="box-title">Lean implementation</text>
+  <text x="354" y="443" class="box-copy">The proved binary64</text>
+  <text x="354" y="467" class="box-copy">reference implementation</text>
+
+  <rect x="642" y="368" width="506" height="130" rx="12" fill="#292929" stroke="#c586c0" stroke-width="2"/>
+  <text x="666" y="411" class="box-title">Python / Rust / JS / ...</text>
+  <text x="666" y="443" class="box-copy">Ordinary production implementations</text>
+  <text x="666" y="467" class="box-copy">following the same reviewed operations</text>
+
+  <path d="M450 265 V360" class="flow"/>
+  <text x="466" y="316" class="check">proved against spec</text>
+  <path d="M570 433 H634" class="flow"/>
+  <text x="592" y="417" class="label">port</text>
+
+  <path d="M450 516 C550 560, 950 560, 1051 516" class="link"/>
+  <text x="700" y="595" class="check">differential tests compare all implementations</text>
+</svg>
