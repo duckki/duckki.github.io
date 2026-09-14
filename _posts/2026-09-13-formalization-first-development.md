@@ -73,7 +73,7 @@ person actively shapes the artifact with the agent; *AI-driven* means that the
 agent carries out the work from reviewed inputs and constraints.
 
 - Writing the Lean specification is AI-assisted. Human interaction matters
-  because this is where the source is interpreted and ambiguities become
+  because this is where the intent is interpreted and ambiguities become
   concrete choices.
 - Writing the Lean proof is AI-driven once the specification and intended
   guarantee are settled.
@@ -145,9 +145,9 @@ $$
 \end{aligned}
 $$
 
-Here, `ValidMessage` means that the message
-has the supported field ranges and coefficient layout, while `InWindow` means
-that the query falls within its validity period.
+Here, `ValidMessage` means that the message has the supported field ranges and
+coefficient layout, while `InWindow` means that the query falls within its
+validity period.
 
 The Lean theorem has the same structure:
 
@@ -192,17 +192,17 @@ for axis in message.coefficients:
 ```
 
 You review this code as usual: operation order, validation, types, error
-handling, integration, and maintainability. The difference is that code review
-is no longer the only evidence for its correctness.
+handling, integration, and maintainability. But you no longer have to establish
+the algorithm's numerical correctness from code review alone.
 
 The project has a mathematical real specification, a floating-point model,
-native Lean code, and Python and Rust ports. The proof covers the floating-point
-model and its native Lean execution. An AI agent checked the ports using differential
-fuzz testing, an established technique that runs generated inputs through
-multiple implementations and compares the results. A recorded campaign ran
-30,464 requests across all four evaluators. Of those, 20,177 produced positions;
-the rest exercised rejection behavior. The successful native results agreed bit
-for bit.
+native Lean code, and Python and Rust ports. The proof connects the
+floating-point model to its native Lean execution. An AI agent checked the ports
+using differential fuzz testing, an established technique that runs generated
+inputs through multiple implementations and compares the results. A recorded
+campaign ran 30,464 requests across all four evaluators. Of those, 20,177
+produced positions; the rest exercised rejection behavior. For successful
+queries, all native implementations agreed bit for bit.
 
 This provides practical assurance that the ports preserve the verified Lean
 behavior. As tooling and techniques improve, this step may eventually be
@@ -228,25 +228,27 @@ microseconds apart, so a one-microsecond query offset can disappear.
 
 For one constructed valid message, the plausible mistake produces about 0.56
 millimeters of position error: 55.6 times the theorem's 10-micrometer limit.
-It demonstrates the kind of ordinary implementation mistake that the whole-function
-theorem rules out.
+It demonstrates the kind of ordinary implementation mistake that the
+whole-function theorem rules out.
 
 ## What changes for the reviewer
 
-Formalization-first development does not remove human review. It reorganizes
-it around smaller questions:
+Formalization-first development does not remove human review. It lightens the
+burden by separating it into smaller questions:
 
 | Artifact | Human review | Evidence in the package |
 | --- | --- | --- |
-| Formal specification | Does this faithfully capture the source and intended choices? | Lean makes every definition precise and type-checkable. |
+| Formal specification | Does this faithfully capture the intent? | Lean makes every definition precise and type-checkable. |
 | Whole-function theorem | Is this the guarantee we actually need, over the right inputs? | Lean checks that the proved implementation satisfies it for every supported input. |
-| Lean, Python, and Rust code | Is the code suitable for production and faithfully ported? | Proof covers Lean; differential tests compare all four evaluators. |
+| Lean, Python, and Rust code | Is the code maintainable and suitable for production? | Proof covers Lean; differential tests compare the ports against it. |
 
-The reviewer still uses domain expertise and software judgment. What changes is
-the amount that must be reconstructed from code alone. The formal specification
-is easier to compare with the paper. Once the reviewer accepts that translation
-and the promised error bound, Lean handles the exhaustive floating-point
-reasoning.
+The reviewer still brings domain expertise and software judgment, but no longer
+has to reconstruct the algorithm's correctness from implementation code alone.
+Once the formal specification and promised error bound are accepted, Lean
+handles the exhaustive floating-point reasoning for the Lean implementation.
+Code review can focus on maintainability, integration, and language-specific
+risks. Differential fuzz testing provides additional evidence that the
+production ports preserve the proved behavior.
 
 ## What it cost
 
@@ -278,11 +280,11 @@ For this project, formalization-first development produced:
 The formal specification makes the intended algorithm easier to review. The
 theorem turns “correct” into a concrete promise. The proof checks that promise
 over the entire supported input space, including numerical cases that ordinary
-examples may miss. Together they form a durable assurance package that can be
-rechecked whenever the implementation changes.
+examples may miss. That moves exhaustive correctness reasoning out of
+line-by-line code review. Together, these artifacts form a durable assurance
+package that can be rechecked whenever the implementation changes.
 
-AI can already give us plausible code from a written source. If the agent can
-also spend a few more hours assembling evidence, which deliverable would you
-rather receive: **the code alone, or the code together with its formal
-specification and a machine-checked proof that the whole function meets its
-stated guarantee?**
+AI can already give us plausible code from prose. If the agent can also spend a
+few more hours assembling evidence, which deliverable would you rather receive:
+**the code alone, or the code together with its formal specification and a
+machine-checked proof that the whole function meets its stated guarantee?**
