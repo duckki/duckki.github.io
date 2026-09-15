@@ -114,7 +114,8 @@ p_k(t) &= \sum_{i=0}^{10} a_{k,i}T_i(x(t)),
 \end{aligned}
 $$
 
-Here is the corresponding real-number specification in Lean:
+Here are the corresponding real-number source equations and independent
+polynomial sum in Lean, shown together for comparison:
 
 ```lean
 def normalizeEpoch (jdMin jdMax t : ℝ) : ℝ :=
@@ -125,15 +126,18 @@ def chebyshevT (x : ℝ) : Nat → ℝ
   | 1 => x
   | n + 2 => 2 * x * chebyshevT x (n + 1) - chebyshevT x n
 
-noncomputable def polynomialCoordinate
-    (n : Nat) (a : List ℝ) (x : ℝ) : ℝ :=
-  ∑ i ∈ Finset.range (n + 1),
-    a.getD i 0 * chebyshevT x i
+noncomputable def polynomialBasis (i : Nat) (x : ℝ) : ℝ :=
+  (Polynomial.Chebyshev.T ℝ (i : ℤ)).eval x
+
+noncomputable def polynomialCoordinate (n : Nat) (a : List ℝ) (x : ℝ) : ℝ :=
+  ∑ i ∈ Finset.range (n + 1), a.getD i 0 * polynomialBasis i x
 ```
 
-The normalization, base cases, recurrence, and coordinate sum each have a clear
-counterpart. A domain expert can compare the paper and specification one item
-at a time, before considering floating-point code or control flow.
+The normalization, base cases, and recurrence have clear counterparts in the
+[Lean source equations](https://github.com/duckki/chebyshev-ephemeris/blob/1045b5c22c714ac40720d4052f2acd1243df4d56/Ephemeris/Definitions/PositionReconstruction.lean#L21-L40);
+the coordinate sum appears in `polynomialCoordinate` above. A domain expert can
+compare the paper and specification one item at a time, before considering
+floating-point code or control flow.
 
 ## Prove the whole receiver, not a toy property
 
@@ -156,26 +160,35 @@ Here, `ValidMessage` means that the message has the supported field ranges and
 coefficient layout, while `InWindow` means that the query falls within its
 validity period.
 
-The Lean theorem has the same structure:
+In Lean, `UniformAccuracy` states the guarantee; the theorem `uniformAccuracy`
+proves it for a 10-micrometer limit:
 
 ```lean
-theorem uniformAccuracy (m : Message) (time : UInt64)
-    (hm : ValidMessage m)
-    (ht : InWindow m time) :
-  ∃ result,
-    evaluate m time = .ok result ∧
-    Binary64Within result (reconstruct m time) (1 / 100000)
+def UniformAccuracy (tolerance : ℝ) : Prop :=
+  0 ≤ tolerance
+  ∧ ∀ m time,
+      ValidMessage m
+      → InWindow m time
+      → ∃ result,
+          Implementation.PositionReconstruction.evaluate m time = .ok result
+          ∧ Binary64Within (result.map Float.toModel)
+              (Definitions.PositionReconstruction.reconstruct m time) tolerance
+
+theorem uniformAccuracy :
+  Implementation.Correctness.Float.UniformAccuracy (1 / 100000)
 ```
 
-[**`evaluate`**](https://github.com/duckki/chebyshev-ephemeris/blob/195eb406de11ad1102ce6df0b746ef84c2a0cbba/Ephemeris/Implementation/Float/PositionReconstruction.lean#L41)
+[**`evaluate`**](https://github.com/duckki/chebyshev-ephemeris/blob/1045b5c22c714ac40720d4052f2acd1243df4d56/Ephemeris/Implementation/PositionReconstruction.lean#L72)
 is the floating-point implementation of the receiver, and
-[**`reconstruct`**](https://github.com/duckki/chebyshev-ephemeris/blob/195eb406de11ad1102ce6df0b746ef84c2a0cbba/Ephemeris/Definitions/PositionReconstruction.lean#L116)
+[**`reconstruct`**](https://github.com/duckki/chebyshev-ephemeris/blob/1045b5c22c714ac40720d4052f2acd1243df4d56/Ephemeris/Definitions/PositionReconstruction.lean#L116)
 is the real-number specification.
-The helper `Binary64Within` includes finite coordinates and the per-axis error
-bound. Together, these statements specify the complete evaluator: accepted
+The [**`UniformAccuracy` statement**](https://github.com/duckki/chebyshev-ephemeris/blob/1045b5c22c714ac40720d4052f2acd1243df4d56/Ephemeris/Implementation/Correctness/Float.lean#L129)
+uses `Binary64Within` to require finite coordinates and a per-axis error bound;
+the [**`uniformAccuracy` proof**](https://github.com/duckki/chebyshev-ephemeris/blob/1045b5c22c714ac40720d4052f2acd1243df4d56/Ephemeris/Proofs/UniformAccuracy.lean#L110)
+establishes it for the native Lean evaluator. Together, they cover accepted
 input, successful return, finite output, and a uniform accuracy bound against
-the real-number specification. This is a guarantee about the complete
-function, not just one example or an intermediate algebraic property.
+the real-number specification. This is a guarantee about the complete function,
+not just one example or an intermediate algebraic property.
 
 It verifies position reconstruction from a decoded message, not the entire
 orbit-determination pipeline. That is the point: prove one whole software
@@ -200,25 +213,16 @@ for axis in message.coefficients:
     position.append(total)
 ```
 
-Today I still inspect target code for integration, operation order, validation,
-types, error handling, and language-specific hazards. These ports were produced
-by AI and checked through differential fuzzing, not emitted by a verified
-compiler. But I no longer ask Python or Rust code review to establish the
-algorithm's mathematical correctness from scratch. That argument lives in Lean.
+Python and Rust were ported by AI, not emitted by a verified compiler. I still
+review their integration, operation order, error handling, types, and
+language-specific hazards. The mathematical correctness argument lives in Lean;
+fuzzing provides evidence that the ports behave like the Lean implementation.
 
-The project has a mathematical real specification, a floating-point model,
-native Lean code, and Python and Rust ports. The proof connects the
-floating-point model to its native Lean execution. An AI agent checked the ports
-using differential fuzz testing, an established technique that runs generated
-inputs through multiple implementations and compares the results. A recorded
-campaign ran 30,464 requests across all four evaluators. Of those, 20,177
-produced positions; the rest exercised rejection behavior. For successful
-queries, all native implementations agreed bit for bit.
-
-This provides strong empirical evidence that the ports preserve the verified
-Lean behavior. As tooling and techniques improve, this step may eventually be
-strengthened with a full, machine-checked proof of mathematical equivalence
-across languages.
+Differential fuzzing compared 30,464 requests across all four evaluators:
+20,177 produced positions, and the rest exercised rejection behavior. The
+native implementations agreed bit for bit on successful queries. This is strong
+empirical evidence that the ports preserve the verified Lean behavior, not a
+machine-checked equivalence proof across languages.
 
 ## A plausible mistake, caught by the proof
 
@@ -273,17 +277,17 @@ specification, and theorem statement.
 
 ## What it cost
 
-I spent about one day working with an AI agent to finish the Lean, Python, and
-Rust implementation package. That was not an entire day of focused human
-engineering time: I did other things while the agent worked. The agent did most
-of the translating, implementing, proving, porting, testing, and refactoring
-while I periodically steered it and answered questions.
+The experiment took about a day of elapsed time with an AI agent. That included
+my search for a suitable example, learning an unfamiliar paper and codebase,
+and refactoring the project. I did other things while the agent worked; this
+was not a full day of focused human engineering.
 
-With reusable AI skills, much of the remaining
-interaction can be automated even further. Compared with asking an agent for code alone,
-the agent may need a few additional hours to produce the formal specification and
-proofs. Human review remains a separate cost, but it begins with a much better
-package.
+With the example chosen and the goal clear, I think the agent could produce the
+Lean, Python, and Rust implementation-and-proof package in a few hours. That
+is an estimate for the AI work, with some human steering, not for human review
+of the specification or code. Reusable AI skills could reduce the steering
+further. Compared with asking for code alone, this gives the agent a few more
+hours of work, but gives human reviewers a much better starting package.
 
 ## Code, or code with evidence?
 
