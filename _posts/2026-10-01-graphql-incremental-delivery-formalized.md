@@ -12,14 +12,14 @@ tags:
 ---
 
 <!-- Code citations use graphql-lean commit c64eecf35458801dade61a1c9c7c46afc0419a3c.
-     Upstream PR status checked on 1 October 2026. -->
+     Upstream PR status checked on 2 October 2026. -->
 
 <!-- cspell:words Prove2Me hasNext WorkQueue GraphQL conforming conformance defer resolvers subfields -->
 
-After years of design work, [GraphQL.js v17 includes experimental support for incremental
-delivery][v17], while its specification is still a [draft][spec-pr]. Ordinary GraphQL
-returns one JSON tree. Incremental delivery lets the server return useful data now, then
-send deferred fields and streamed list items later.
+Long-awaited GraphQL incremental delivery landed in [GraphQL.js v17][v17] as an
+experimental feature, while its specification is still a [draft][spec-pr].
+Ordinary GraphQL returns one JSON tree. Incremental delivery lets the server return
+part of the requested data now, then send deferred fields and streamed list items later.
 
 For example, a client can ask for a user's ID immediately, their biography
 later, and the first friend before the rest of the list is ready:
@@ -71,13 +71,14 @@ arrive in the opposite order, or together in one update. The client still needs
 to assemble the same response.
 
 I had already verified variations of GraphQL execution in
-[Lean][lean], a programming language and proof assistant. So, I expected to
+[Lean][lean], a programming language and proof assistant. I expected to
 formalize and verify this extension in a few days as a side project. It took seventeen!
-The changes to field execution were manageable. The difficult part was tracking
+The changes to the initial execution were manageable. The difficult part was tracking
 work that had finished computing but could not yet be delivered.
 
-The result is a [formal model of incremental execution][execution], general correctness
-proofs, and a work queue model based on the GraphQL.js implementation.
+The result is a [formal model of incremental execution][execution],
+a [work queue contract][queue-contract], [general correctness proofs][theorem-guide],
+and a [work queue implementation model][queue-model] based on the GraphQL.js code.
 
 ## Much larger than ordinary execution
 
@@ -150,7 +151,7 @@ history: did the right pieces arrive, with valid IDs, without duplication or
 loss?
 
 Here, a history is the sequence of output events observed so far. An admitted
-history is one the queue's event source permits. The proposed
+history is one the queue's output interface permits. The proposed
 [WorkQueue conformance contract][queue-contract] has four conditions:
 
 1. After initialization, the empty update history is admitted.
@@ -241,11 +242,16 @@ streams, or whether the host eventually settles every task.
 The general theorem gives us a target. The next job is to prove that a concrete
 implementation satisfies it.
 
-I modeled GraphQL.js's queue and publisher as an [executable state machine][queue-model].
-Host events supply successes, failures, stream items, and exhaustion. The queue
-updates its task and group bookkeeping. The publisher prepares deliveries,
-and the response mapper produces the `pending`,
-`incremental`, `completed`, and `hasNext` entries the client sees.
+I modeled GraphQL.js's queue and publisher as an [executable state machine][queue-model]
+in Lean. The underlying host events supply successes, failures, stream items, and
+exhaustion.
+The queue updates its task and group bookkeeping. The publisher prepares deliveries,
+and the response mapper produces the `pending`, `incremental`, `completed`, and
+`hasNext` entries the client sees.
+
+I treated the host event source as a black box with a few required behaviors.
+This lets us prove the WorkQueue contract from a smaller set of assumptions
+about host scheduling.
 
 The [public conformance statement][queue-conformance] is small enough to read:
 
@@ -259,7 +265,7 @@ def createWorkQueueForScheduleConforms : Prop :=
 ```
 
 It says: for every nonempty work tree produced by execution, and every host
-event source valid for that work, the executable queue satisfies the
+event schedule valid for that work, the executable queue satisfies the
 WorkQueue contract. A machine-checked proof establishes the whole statement.
 
 The host assumptions describe input behavior: settled values match the work,
@@ -267,10 +273,12 @@ task outcomes are not settled twice, producer dependencies are respected, stream
 items stay ordered, and events settle eligible work. They do not assume that the
 queue's output is correct. Output correctness is what we prove.
 
-The queue proof is not enough on its own: the responses emitted by the queue,
-publisher, and response mapper must also satisfy the query guarantees. The
-[public implementation-correctness statement][implementation-correctness]
-connects those actual outputs to the general theorems. In abbreviated notation,
+Queue conformance is only part of the story. The responses emitted by the queue,
+publisher, and response mapper must also satisfy the query-level correctness guarantees.
+The [public implementation-correctness statement][implementation-correctness]
+connects the implementation's actual outputs to the general query-level theorems.
+
+Here's one example. With names and routine parameters abbreviated,
 the resulting [reconstruction guarantee][reconstruction-statement] says:
 
 ```lean
@@ -283,9 +291,8 @@ queue.Conforms
           (executeOrdinary query.eraseIncrementalDirectives)
 ```
 
-The names and routine parameters are shortened here; the linked statement
-contains the exact Lean definition. Whatever permitted settlement order is
-used, a complete, error-free run delivers pieces that merge into the ordinary
+Whatever permitted settlement order is used, a complete, error-free run
+delivers pieces that merge into the ordinary
 response. That is a guarantee about the whole result, not just queue bookkeeping.
 
 Getting there took seventeen days. It began as a side project, with slow
@@ -317,7 +324,7 @@ progress.
   <figcaption>Seventeen days of proof growth. An earlier snapshot contains 3,023 named theorems and 8,580 dependency relations leading to the central conformance theorem. The animation follows recorded source chronology, not every attempt or the first successful check of each lemma. Radial distance indicates dependency depth, not difficulty.</figcaption>
 </figure>
 
-By the merged snapshot, the incremental proof modules totaled 142,542 lines.
+By the final commit, the incremental proof modules totaled 142,542 lines.
 Of those, 106,866—three quarters—prove that the concrete queue and publisher
 conform. Direct incremental execution proofs take 10,791 lines, compared with
 6,796 for ordinary execution. Most of the expansion was not field execution;
@@ -344,17 +351,17 @@ The working loop was to propose conformance conditions, attempt a difficult
 claim, isolate a counterexample, and decide what it revealed. Sometimes the
 implementation model was wrong. Sometimes the contract excluded legitimate
 implementation behavior. Sometimes a bug was found in the original GraphQL.js
-source. Each correction changed the plan and produced a targeted regression.
+source code. Each correction changed the plan and produced a targeted regression.
 
 I reviewed those public definitions and the correspondence with the draft and
 GraphQL.js. AI agents implemented definitions, constructed proofs, investigated
 counterexamples, and repaired the proof structure. Lean's kernel checked the
-resulting proof terms. My project accounting puts the effort at about 100
-accumulated agent hours and 3 billion output tokens; the seventeen days describe
-elapsed time, with varying human attention.
+resulting proof. The effort totaled about 100 accumulated agent-hours and
+2.4 billion total tokens (including 10 million output tokens) using GPT-6 Astra;
+the seventeen days were elapsed time, with varying human attention.
 
-The proof made me revisit both the specification and the implementation. The
-hardest part of that iteration was lifecycle accounting.
+The proof process made me revisit both the specification and the implementation multiple
+times. The hardest part of that iteration was lifecycle accounting.
 
 ## Why lifecycle accounting was difficult
 
@@ -408,7 +415,7 @@ accepted failures, and client-visible notices together. **Settlement is not
 publication, and publication is not completion.** That distinction explains the
 most revealing bug found during the work.
 
-## A bug found in GraphQL.js
+## One of the bugs found in GraphQL.js
 
 Consider this operation:
 
@@ -431,16 +438,7 @@ only their settlement order, and the audited GraphQL.js v17.0.1
   <div class="incremental-panel incremental-timelines">
     <div class="incremental-kicker">Same operation · same resolver results</div>
     <div class="incremental-run">
-      <div class="incremental-run-title">Order A · value lost</div>
-      <div class="incremental-cards">
-        <div class="incremental-card"><span class="incremental-step">1 · bad</span><p>R fails.</p></div>
-        <div class="incremental-card incremental-card--red"><span class="incremental-step">2 · x = "X"</span><p>C waits for P, but is pruned as “empty.”</p></div>
-        <div class="incremental-card"><span class="incremental-step">3 · slow = "ok"</span><p>P releases its children. C is already gone.</p></div>
-      </div>
-      <div class="incremental-outcome incremental-outcome--red">Response ends without x.</div>
-    </div>
-    <div class="incremental-run">
-      <div class="incremental-run-title">Order B · value delivered</div>
+      <div class="incremental-run-title">Order A · value delivered</div>
       <div class="incremental-cards">
         <div class="incremental-card"><span class="incremental-step">1 · bad</span><p>R fails.</p></div>
         <div class="incremental-card"><span class="incremental-step">2 · slow = "ok"</span><p>P releases C.</p></div>
@@ -448,15 +446,24 @@ only their settlement order, and the audited GraphQL.js v17.0.1
       </div>
       <div class="incremental-outcome incremental-outcome--teal">Response includes x: "X".</div>
     </div>
-    <div class="incremental-result">Corrected behavior of order A: retain C's buffered value → P releases C → drain C and publish x.</div>
+    <div class="incremental-run">
+      <div class="incremental-run-title">Order B · value lost</div>
+      <div class="incremental-cards">
+        <div class="incremental-card"><span class="incremental-step">1 · bad</span><p>R fails.</p></div>
+        <div class="incremental-card incremental-card--red"><span class="incremental-step">2 · x = "X"</span><p>C waits for P, but is pruned as “empty.”</p></div>
+        <div class="incremental-card"><span class="incremental-step">3 · slow = "ok"</span><p>P releases its children. C is already gone.</p></div>
+      </div>
+      <div class="incremental-outcome incremental-outcome--red">Response ends without x.</div>
+    </div>
+    <div class="incremental-result">Corrected behavior of order B: retain C's buffered value → P releases C → drain C and publish x.</div>
   </div>
   <figcaption>The audited queue loses a successful value in one permitted settlement order. The correction retains buffered work and publishes it when its parent releases it.</figcaption>
 </figure>
 
-Same operation. Same resolver results. In one permitted order, a successfully
-computed field disappears.
+Same operation. Same resolver results. Order A delivers `x`; in order B, the
+successfully computed field disappears.
 
-When `x` settles before `slow`, C has no unfinished task left. Its value is
+In order B, `x` settles before `slow`, leaving C with no unfinished task. Its value is
 still buffered, waiting for P to release C. The old pruning rule treats C as
 empty and removes it. When P eventually releases its children, the successful
 value has already been lost.
@@ -473,7 +480,8 @@ The broader audit found five issues:
 - Children registered after a parent's failure could escape cancellation.
 - Previously collected errors could disappear when a later field failed.
 - An explicit `label: null` raised a question about whether null should appear
-  on the wire. This is a specification clarification, not a confirmed bug.
+  on the wire. This is not a confirmed bug. I posted
+  a [clarification question][null-question] on the draft spec PR.
 
 Two GraphQL.js pull requests carry the corrections:
 [retain deferred outcomes until group release][queue-pr] and
@@ -484,25 +492,24 @@ changes have not yet been merged into GraphQL.js as of this writing.
 ## Incremental delivery now has a formal model
 
 We now have a formalization of incremental delivery, an independent
-WorkQueue contract, and proofs of the response guarantees shared by all
+WorkQueue contract, and proofs of the general correctness guarantees shared by all
 conforming queues. We also have a corrected executable model of GraphQL.js's
-queue and publisher, proved to conform, with a bridge connecting its actual
-outputs to the general query theorems.
+queue and publisher, proved to conform to that contract, with its actual
+outputs connected to the general theorems.
 
-Besides the GraphQL.js PRs reported, the specification portion produced
+Beyond the GraphQL.js fixes, the specification work produced
 [three reported draft corrections][spec-corrections]
 about aliased response paths, the final `hasNext` value, and shared ID-allocation
-state, along with the [explicit-null-label question][null-question]. The larger
-WorkQueue contract is a potential contribution to the spec.
+state. The larger WorkQueue contract is a potential contribution to the spec.
 
 GraphQL's specification authors, incremental-delivery workgroup, and GraphQL.js
 maintainers supplied the design this project formalizes. This formalization work
 contributes a precise account of its queue contract, general correctness results,
 and concrete counterexamples along with their fixes.
 
-I expected to verify a small execution extension. I ended up formalizing a
-concurrent response protocol. The result gives us both an executable reference
-and a reusable promise for other implementations to meet.
+I expected to verify a small execution extension and ended up formalizing a
+concurrent response protocol. At the end of the day, the result gives us both an
+executable reference and a reusable contract for other implementations to target.
 
 (The [code and theorem guide][theorem-guide], [WorkQueue semantics][semantics-guide],
 and [implementation proof map][implementation-guide] are available in
