@@ -110,7 +110,7 @@ GraphQL specification or the JavaScript implementation.
     <div class="incremental-kicker">Definitions · comments and blank lines included</div>
     <div class="incremental-bar-label"><span>Ordinary execution</span><strong>928 lines</strong></div>
     <div class="incremental-bar-track" aria-hidden="true"><span class="incremental-fill--blue" style="width: 22.925%"></span></div>
-    <div class="incremental-bar-label"><span>Incremental public definitions</span><strong>4,048 lines</strong></div>
+    <div class="incremental-bar-label"><span>Incremental execution</span><strong>4,048 lines</strong></div>
     <div class="incremental-bar-track" aria-hidden="true">
       <span class="incremental-fill--blue" style="width: 26.606%"></span><span class="incremental-fill--teal" style="width: 18.997%"></span><span class="incremental-fill--gold" style="width: 30.435%"></span><span class="incremental-fill--purple" style="width: 23.962%"></span>
     </div>
@@ -253,7 +253,7 @@ I treated the host event source as a black box with a few required behaviors.
 This lets us prove the WorkQueue contract from a smaller set of assumptions
 about host scheduling.
 
-The [public conformance statement][queue-conformance] is small enough to read:
+The [conformance statement][queue-conformance] is small enough to read:
 
 ```lean
 def createWorkQueueForScheduleConforms : Prop :=
@@ -275,7 +275,7 @@ queue's output is correct. Output correctness is what we prove.
 
 Queue conformance is only part of the story. The responses emitted by the queue,
 publisher, and response mapper must also satisfy the query-level correctness guarantees.
-The [public implementation-correctness statement][implementation-correctness]
+The [implementation-correctness statement][implementation-correctness]
 connects the implementation's actual outputs to the general query-level theorems.
 
 Here's one example. With names and routine parameters abbreviated,
