@@ -295,7 +295,7 @@ reviews their meaning. Repeat until the statement captures the intended behavior
 
 **Implement and prove correctness.** Build the Lean implementation and its proof together.
 Revise code or proof as needed; a human decides when a finding calls for changing the
-specification. An unfinished proof alone does not show the claim is false.
+specification.
 
 **Optionally refine within Lean.** Improve the algorithm or representation, rebuilding
 correctness proofs after each change. This loop can repeat before any Rust port exists.
